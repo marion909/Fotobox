@@ -89,6 +89,27 @@ def capture_photo():
     result = camera.take_photo()
     return jsonify(result)
 
+@app.route('/api/start_live_preview', methods=['POST'])
+def api_start_live_preview():
+    """API Endpoint zum Starten der Live-Vorschau"""
+    result = camera.start_live_preview()
+    return jsonify(result)
+
+@app.route('/api/stop_live_preview', methods=['POST'])
+def api_stop_live_preview():
+    """API Endpoint zum Stoppen der Live-Vorschau"""
+    camera.stop_live_preview()
+    return jsonify({'success': True})
+
+@app.route('/api/preview_image')
+def api_preview_image():
+    """API Endpoint für aktuelles Preview-Bild"""
+    preview_path = camera.capture_preview_image()
+    if preview_path and os.path.exists(preview_path):
+        return send_file(preview_path, mimetype='image/jpeg')
+    else:
+        return "Preview nicht verfügbar", 404
+
 @app.route('/api/camera_status')
 def api_camera_status():
     """API Endpoint für Kamera-Status"""

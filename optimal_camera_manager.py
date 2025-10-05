@@ -113,6 +113,66 @@ class OptimalCameraManager:
                 'error': str(e)
             }
     
+    def start_live_preview(self):
+        """Startet Live-Vorschau der Kamera"""
+        if not GPHOTO2_AVAILABLE or not self.camera_detected:
+            return {
+                'success': False,
+                'message': 'Kamera nicht verfügbar'
+            }
+        
+        try:
+            # Live View aktivieren
+            config = self.camera.get_config()
+            viewfinder = config.get_child_by_name('viewfinder')
+            viewfinder.set_value(1)
+            self.camera.set_config(config)
+            
+            return {
+                'success': True,
+                'message': 'Live-Vorschau aktiviert'
+            }
+        except Exception as e:
+            print(f"❌ Live-Vorschau Fehler: {e}")
+            return {
+                'success': False, 
+                'message': f'Live-Vorschau nicht möglich: {e}'
+            }
+    
+    def stop_live_preview(self):
+        """Stoppt Live-Vorschau der Kamera"""
+        if not GPHOTO2_AVAILABLE or not self.camera_detected:
+            return
+        
+        try:
+            # Live View deaktivieren
+            config = self.camera.get_config()
+            viewfinder = config.get_child_by_name('viewfinder')
+            viewfinder.set_value(0)
+            self.camera.set_config(config)
+        except Exception as e:
+            print(f"⚠️ Fehler beim Stoppen der Live-Vorschau: {e}")
+    
+    def capture_preview_image(self):
+        """Erfasst ein Preview-Bild für Live-Ansicht"""
+        if not GPHOTO2_AVAILABLE or not self.camera_detected:
+            return None
+        
+        try:
+            # Preview-Bild aufnehmen
+            camera_file = self.camera.capture_preview()
+            file_data = camera_file.get_data_and_size()
+            
+            # Als temporäre Datei speichern
+            preview_path = os.path.join(self.config.photo_dir, 'live_preview.jpg')
+            with open(preview_path, 'wb') as f:
+                f.write(file_data)
+            
+            return preview_path
+        except Exception as e:
+            print(f"❌ Preview-Aufnahme Fehler: {e}")
+            return None
+
     def take_photo(self, filename=None, **kwargs):
         """Nimmt ein Foto auf mit gphoto2 Python"""
         if not GPHOTO2_AVAILABLE:
