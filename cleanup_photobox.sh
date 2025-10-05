@@ -6,14 +6,22 @@
 set -e
 
 # Automatische Force-Erkennung für curl-Ausführung
-if [ -t 0 ]; then
-    # Terminal verfügbar - interaktiver Modus
-    INTERACTIVE_MODE=true
-else
-    # Kein Terminal (z.B. curl | bash) - automatischer Force-Modus
+FORCE_MODE=false
+INTERACTIVE_MODE=true
+
+# Prüfe ob über pipe ausgeführt (curl | bash)
+if ! [ -t 0 ]; then
     INTERACTIVE_MODE=false
-    set -- "$@" "--force"
+    FORCE_MODE=true
 fi
+
+# Parameter prüfen
+for arg in "$@"; do
+    if [ "$arg" = "--force" ] || [ "$arg" = "-f" ]; then
+        FORCE_MODE=true
+        break
+    fi
+done
 
 # Farben für Output
 RED='\033[0;31m'
@@ -61,8 +69,19 @@ INSTALL_DIR="/home/pi/Fotobox"
 SERVICE_USER="pi"
 BACKUP_DIR="/home/pi/photobox_backup"
 
-# Bestätigung vom Benutzer (außer bei --force oder curl-Modus)
-if [ "$1" != "--force" ] && [ "$INTERACTIVE_MODE" = true ]; then
+# Bestätigung vom Benutzer
+if [ "$FORCE_MODE" = true ]; then
+    if [ "$INTERACTIVE_MODE" = false ]; then
+        print_status "🔄 Automatischer Cleanup-Modus (curl-Ausführung erkannt)"
+        print_warning "⚠️  Alle Photobox-Daten werden in 5 Sekunden gelöscht..."
+        print_status "Zum Abbrechen: Ctrl+C drücken"
+        echo ""
+        sleep 5
+        print_status "✅ Cleanup wird gestartet..."
+    else
+        print_status "⚡ Force-Modus aktiviert - Cleanup startet sofort..."
+    fi
+else
     echo -e "${RED}Sind Sie sicher, dass Sie ALLE Photobox-Daten löschen möchten?${NC}"
     echo "Dies kann NICHT rückgängig gemacht werden!"
     echo ""
@@ -79,11 +98,6 @@ if [ "$1" != "--force" ] && [ "$INTERACTIVE_MODE" = true ]; then
         print_status "Cleanup abgebrochen durch Benutzer"
         exit 0
     fi
-elif [ "$INTERACTIVE_MODE" = false ]; then
-    print_status "Automatischer Cleanup-Modus aktiviert (curl-Ausführung erkannt)"
-    print_warning "Alle Photobox-Daten werden in 5 Sekunden gelöscht..."
-    print_status "Zum Abbrechen: Ctrl+C drücken"
-    sleep 5
 fi
 
 # Root-Check
