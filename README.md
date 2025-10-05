@@ -167,6 +167,7 @@ sudo journalctl -u photobox -f         # Live-Logs anzeigen
 # Updates & Wartung
 sudo ./update_photobox.sh              # Sichere Update-Installation
 ./fix_camera_usb.sh                    # Kamera-USB-Probleme beheben
+sudo ./cleanup_photobox.sh             # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
 sudo reboot                            # Bei Problemen: Neustart
 ```
 
@@ -181,6 +182,18 @@ git stash                              # Lokale Änderungen sichern
 git pull                               # Updates holen
 git stash pop                          # Änderungen wiederherstellen
 sudo systemctl restart photobox       # Service neustarten
+```
+
+### 🧹 **Vollständige Deinstallation**
+```bash
+# Komplette Photobox-Entfernung (alle Daten werden gelöscht!):
+cd /home/pi/Fotobox
+sudo ./cleanup_photobox.sh
+
+# Oder direkt per curl:
+curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/cleanup_photobox.sh | sudo bash
+
+# ⚠️ WARNUNG: Alle Fotos, Konfigurationen und Services werden entfernt!
 ```
 
 ## 🔧 Konfiguration
@@ -345,7 +358,9 @@ Fotobox/
 │   ├── install_autostart.sh # Autostart-Service
 │   └── setup_system.sh     # System-Vorbereitung
 │
-└── fix_camera_usb.sh      # USB-Kamera Fix Script
+├── fix_camera_usb.sh      # USB-Kamera Fix Script
+├── update_photobox.sh     # Sichere Update-Installation
+└── cleanup_photobox.sh    # Vollständige Deinstallation
 ```
 
 ## 🎯 API Endpoints
