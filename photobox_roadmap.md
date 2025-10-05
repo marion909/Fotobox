@@ -24,17 +24,17 @@ Entwicklung einer anpassbaren Fotobox-Anwendung für Raspberry Pi mit Canon EOS 
 
 ## 🧠 Entwicklungsphasen
 
-### Phase 1 – Grundfunktion
-- [ ] Einrichtung von `gphoto2` für Kameraauslösung
-- [ ] Testbild aufnehmen und lokal speichern
-- [ ] Flask-App zur Steuerung (Touch-UI)
-- [ ] Anzeige der aufgenommenen Fotos im Browser
+### Phase 1 – Grundfunktion ✅ ABGESCHLOSSEN
+- [x] Einrichtung von `gphoto2` für Kameraauslösung ✅
+- [x] Testbild aufnehmen und lokal speichern ✅
+- [x] Flask-App zur Steuerung (Touch-UI) ✅
+- [x] Anzeige der aufgenommenen Fotos im Browser ✅
 
-### Phase 2 – Erweiterungen
-- [ ] Overlay/Branding (Logo, Text, Rahmen)
-- [ ] Automatisches Drucken (via `lp`)
-- [ ] Upload auf Server (HTTP/SFTP)
-- [ ] Konfigurierbare Themes
+### Phase 2 – Erweiterungen ✅ ABGESCHLOSSEN
+- [x] Overlay/Branding (Logo, Text, Rahmen) ✅
+- [x] Automatisches Drucken (via `lp`) ✅
+- [x] Upload auf Server (HTTP/SFTP) ✅
+- [x] Konfigurierbare Themes ✅
 
 ### Phase 3 – Kiosk & Deployment
 - [ ] Autostart-Service (systemd)
