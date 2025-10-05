@@ -316,6 +316,8 @@ if [ -d "$INSTALL_DIR" ]; then
         if [ -d "$INSTALL_DIR" ]; then
             print_success "Repository erfolgreich aktualisiert"
             cd "$INSTALL_DIR"
+            # Skip cloning since repository already exists and was updated
+            REPO_EXISTS=true
         fi
     else
         print_warning "Kein Git-Repository gefunden in $INSTALL_DIR"
@@ -337,10 +339,16 @@ if [ -d "$INSTALL_DIR" ]; then
             exit 1
         fi
     fi
+else
+    REPO_EXISTS=false
 fi
 
-print_status "Clone Repository von GitHub..."
-sudo -u $SERVICE_USER git clone "$REPO_URL" "$INSTALL_DIR"
+# Clone Repository nur wenn es noch nicht existiert
+if [ "$REPO_EXISTS" != "true" ]; then
+    print_status "Clone Repository von GitHub..."
+    sudo -u $SERVICE_USER git clone "$REPO_URL" "$INSTALL_DIR"
+fi
+
 cd "$INSTALL_DIR"
 
 # Python Virtual Environment Setup
