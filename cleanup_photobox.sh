@@ -9,10 +9,10 @@ set -e
 FORCE_MODE=false
 INTERACTIVE_MODE=true
 
-# Prüfe ob über pipe ausgeführt (curl | bash)
-if ! [ -t 0 ]; then
-    INTERACTIVE_MODE=false
+# Einfache und zuverlässige Lösung: Immer Force-Modus wenn keine TTY
+if ! tty -s 2>/dev/null; then
     FORCE_MODE=true
+    INTERACTIVE_MODE=false
 fi
 
 # Parameter prüfen
@@ -22,6 +22,20 @@ for arg in "$@"; do
         break
     fi
 done
+
+# Fallback: Wenn read nicht funktioniert, automatisch Force-Modus
+if [ "$FORCE_MODE" = false ] && ! read -t 1 -n 1 2>/dev/null; then
+    if [ $? -eq 142 ]; then  # Timeout bedeutet kein Input verfügbar
+        FORCE_MODE=true
+        INTERACTIVE_MODE=false
+    fi
+fi
+
+# Debug-Info (nur bei Test)
+if [ "$DEBUG" = "1" ]; then
+    echo "DEBUG: FORCE_MODE=$FORCE_MODE, INTERACTIVE_MODE=$INTERACTIVE_MODE"
+    echo "DEBUG: TERM=$TERM, tty0=$([ -t 0 ] && echo "yes" || echo "no"), tty1=$([ -t 1 ] && echo "yes" || echo "no")"
+fi
 
 # Farben für Output
 RED='\033[0;31m'
@@ -72,11 +86,11 @@ BACKUP_DIR="/home/pi/photobox_backup"
 # Bestätigung vom Benutzer
 if [ "$FORCE_MODE" = true ]; then
     if [ "$INTERACTIVE_MODE" = false ]; then
-        print_status "🔄 Automatischer Cleanup-Modus (curl-Ausführung erkannt)"
-        print_warning "⚠️  Alle Photobox-Daten werden in 5 Sekunden gelöscht..."
+        print_status "🔄 Automatischer Cleanup-Modus (Pipe-Ausführung erkannt)"
+        print_warning "⚠️  Alle Photobox-Daten werden in 3 Sekunden gelöscht..."
         print_status "Zum Abbrechen: Ctrl+C drücken"
         echo ""
-        sleep 5
+        sleep 3
         print_status "✅ Cleanup wird gestartet..."
     else
         print_status "⚡ Force-Modus aktiviert - Cleanup startet sofort..."
@@ -92,11 +106,20 @@ else
     echo "  • Boot-Konfigurationen"
     echo "  • Backup-Dateien: $BACKUP_DIR"
     echo ""
-    read -p "Zum Bestätigen tippen Sie 'DELETE ALL': " confirmation
     
-    if [ "$confirmation" != "DELETE ALL" ]; then
-        print_status "Cleanup abgebrochen durch Benutzer"
-        exit 0
+    # Robuste Eingabe mit Timeout für automatische Erkennung
+    if read -t 30 -p "Zum Bestätigen tippen Sie 'DELETE ALL': " confirmation 2>/dev/null; then
+        if [ "$confirmation" != "DELETE ALL" ]; then
+            print_status "Cleanup abgebrochen durch Benutzer"
+            exit 0
+        fi
+    else
+        # Timeout oder read-Fehler = Pipe-Modus erkannt
+        print_status "🔄 Pipe-Modus erkannt (read-Timeout) - Automatischer Start"
+        print_warning "⚠️  Alle Photobox-Daten werden in 3 Sekunden gelöscht..."
+        print_status "Zum Abbrechen: Ctrl+C drücken"
+        sleep 3
+        print_status "✅ Cleanup wird gestartet..."
     fi
 fi
 
