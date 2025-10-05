@@ -1130,6 +1130,29 @@ domain=photobox.local
 address=/photobox.local/192.168.4.1
 EOF
 
+print_step "Optimaler Camera Manager Setup"
+print_status "Führe Optimal Photobox Setup aus..."
+
+# Wechsle ins Installationsverzeichnis
+cd "$INSTALL_DIR"
+
+# Führe setup_optimal_photobox.sh aus
+if [ -f "scripts/setup_optimal_photobox.sh" ]; then
+    print_status "Starte setup_optimal_photobox.sh..."
+    chmod +x scripts/setup_optimal_photobox.sh
+    
+    # Führe das Setup-Script als pi-Benutzer aus
+    sudo -u "$SERVICE_USER" bash scripts/setup_optimal_photobox.sh
+    
+    if [ $? -eq 0 ]; then
+        print_success "Optimal Photobox Setup erfolgreich abgeschlossen!"
+    else
+        print_warning "Optimal Photobox Setup mit Warnungen abgeschlossen"
+    fi
+else
+    print_warning "setup_optimal_photobox.sh nicht gefunden - überspringe..."
+fi
+
 print_step "Finalisierung"
 print_status "Setze Berechtigungen..."
 chown -R $SERVICE_USER:$SERVICE_USER "$INSTALL_DIR"
@@ -1151,6 +1174,7 @@ echo -e "╚══════════════════════�
 echo ""
 echo -e "${BLUE}📋 Installierte Komponenten:${NC}"
 echo "   • Photobox Flask-Anwendung"
+echo "   • Optimaler Camera Manager (gphoto2 Python)"
 echo "   • Systemd-Service (photobox)"
 echo "   • Kiosk-Modus (Chromium Vollbild)"
 echo "   • Kamera-Unterstützung (gphoto2)"
@@ -1178,9 +1202,10 @@ echo ""
 echo -e "${YELLOW}⚡ NÄCHSTE SCHRITTE:${NC}"
 echo "   1. Hardware anschließen (Kamera, Drucker, Touchscreen)"
 echo "   2. System neustarten: sudo reboot"
-echo "   3. Hardware testen: /home/$SERVICE_USER/test_hardware.sh"
-echo "   4. Admin-Panel öffnen: http://localhost:5000/admin"
-echo "   5. Server-Upload konfigurieren (optional)"
+echo "   3. Photobox ist automatisch einsatzbereit!"
+echo "   4. Hardware testen: /home/$SERVICE_USER/test_hardware.sh"
+echo "   5. Admin-Panel öffnen: http://localhost:5000/admin"
+echo "   6. Server-Upload konfigurieren (optional)"
 echo ""
 echo -e "${BLUE}🔧 Kamera-Einstellungen (Canon EOS):${NC}"
 echo "   • USB-Modus: 'PC Connect' oder 'PTP' (NICHT Mass Storage)"
