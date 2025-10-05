@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Camera Manager für Photobox
+Camera Manager für Fotobox
 Kamera-Controller für gphoto2 mit robuster Canon EOS Unterstützung
 """
 

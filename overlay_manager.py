@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Photobox Overlay-Manager - Phase 2
+Fotobox Overlay-Manager - Phase 2
 Verwaltet Logos, Text-Overlays und Rahmen für Fotos
 """
 
@@ -336,7 +336,7 @@ def test_overlay_manager():
     # Aktiviere Overlays für Test
     config.overlay.enabled = True
     config.overlay.text_enabled = True
-    config.overlay.text_content = "Photobox {date} {time}"
+    config.overlay.text_content = "Fotobox {date} {time}"
     config.overlay.frame_enabled = True
     
     print("🧪 Overlay-Manager Test abgeschlossen")

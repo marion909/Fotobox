@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Einfacher Camera Manager für Photobox
+Einfacher Camera Manager für Fotobox
 Nur gphoto2 CLI - bewährte, stabile Lösung
 """
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Photobox Konfiguration - Phase 2
+Fotobox Konfiguration - Phase 2
 Erweiterte Einstellungen für Overlays, Drucken und Server-Upload
 """
 
@@ -19,7 +19,7 @@ class OverlayConfig:
     logo_opacity: float = 0.8
     
     text_enabled: bool = False
-    text_content: str = "Photobox 2025"
+    text_content: str = "Fotobox 2025"
     text_position: str = "bottom-center"
     text_font_size: int = 48
     text_color: str = "#FFFFFF"
@@ -93,9 +93,9 @@ class ThemeConfig:
 
 @dataclass
 class AppConfig:
-    """Haupt-Konfiguration der Photobox"""
+    """Haupt-Konfiguration der Fotobox"""
     # Basis-Einstellungen
-    app_name: str = "Photobox"
+    app_name: str = "Fotobox"
     version: str = "2.0.0"
     debug_mode: bool = False
     
@@ -140,7 +140,7 @@ class AppConfig:
             self.theme = ThemeConfig()
 
 class ConfigManager:
-    """Verwaltung der Photobox-Konfiguration"""
+    """Verwaltung der Fotobox-Konfiguration"""
     
     def __init__(self, config_file: str = "config.json"):
         self.config_file = config_file
@@ -264,7 +264,7 @@ def set_setting(key: str, value) -> bool:
 
 if __name__ == "__main__":
     # Test der Konfiguration
-    print("📋 Photobox Konfiguration - Test")
+    print("📋 Fotobox Konfiguration - Test")
     
     config = get_config()
     print(f"App Name: {config.app_name}")

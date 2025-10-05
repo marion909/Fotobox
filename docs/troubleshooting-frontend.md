@@ -16,21 +16,21 @@ curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/dia
 ### 1. Service läuft nicht
 ```bash
 # Service Status prüfen
-sudo systemctl status photobox
+sudo systemctl status fotobox
 
 # Service starten
-sudo systemctl start photobox
+sudo systemctl start fotobox
 
 # Service für Autostart aktivieren
-sudo systemctl enable photobox
+sudo systemctl enable fotobox
 
 # Live Logs anzeigen
-sudo journalctl -u photobox -f
+sudo journalctl -u fotobox -f
 ```
 
 ### 2. Virtual Environment Problem
 ```bash
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 
 # Virtual Environment neu erstellen
 rm -rf .venv
@@ -38,17 +38,17 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 
 # Service neustarten
-sudo systemctl restart photobox
+sudo systemctl restart fotobox
 ```
 
 ### 3. Berechtigungen Problem
 ```bash
 # Berechtigungen korrigieren
-sudo chown -R pi:pi /home/pi/Photobox
-sudo chmod +x /home/pi/Photobox/*.sh
+sudo chown -R pi:pi /home/pi/Fotobox
+sudo chmod +x /home/pi/Fotobox/*.sh
 
 # Service neustarten
-sudo systemctl restart photobox
+sudo systemctl restart fotobox
 ```
 
 ### 4. Port bereits belegt
@@ -60,12 +60,12 @@ sudo netstat -tlnp | grep :5000
 sudo kill -9 <PID>
 
 # Service neustarten
-sudo systemctl restart photobox
+sudo systemctl restart fotobox
 ```
 
 ### 5. Manueller App-Start zum Testen
 ```bash
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 
 # App manuell starten (zum Debuggen)
 .venv/bin/python app.py
@@ -91,7 +91,7 @@ http://[IP-ADRESSE]:5000    # Von anderen Geräten im Netzwerk
 
 ```bash
 # Cleanup (optional - nur bei größeren Problemen)
-curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/cleanup_photobox.sh | bash
+curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/cleanup_fotobox.sh | bash
 
 # Neuinstallation
 curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/install_complete.sh | bash
@@ -101,13 +101,13 @@ curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/ins
 
 ```bash
 # Detaillierte Service-Logs
-sudo journalctl -u photobox --no-pager -n 50
+sudo journalctl -u fotobox --no-pager -n 50
 
 # System-Status
 sudo systemctl --failed
 
 # Python-Module testen
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 .venv/bin/python -c "import flask, PIL, requests; print('All modules OK')"
 
 # Netzwerk-Test
@@ -125,7 +125,7 @@ Falls die Probleme weiterhin bestehen:
 
 2. **Service-Logs sammeln:**
    ```bash
-   sudo journalctl -u photobox --no-pager > service-logs.txt
+   sudo journalctl -u fotobox --no-pager > service-logs.txt
    ```
 
 3. **GitHub Issue erstellen:** https://github.com/marion909/Fotobox/issues
@@ -139,7 +139,7 @@ Falls der Service nicht funktioniert, aber die App manuell läuft:
 
 ```bash
 # Temporärer Kiosk-Start ohne Service
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 .venv/bin/python app.py &
 
 # Chromium im Kiosk-Modus starten

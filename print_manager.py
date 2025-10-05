@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Photobox Druck-Manager - Phase 2
+Fotobox Druck-Manager - Phase 2
 Verwaltet automatisches Drucken von Fotos via CUPS/lp
 """
 
@@ -143,7 +143,7 @@ class PrintManager:
                     img = self._enhance_for_photo_print(img)
                 
                 # Speichere temporäre Datei
-                temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='photobox_print_')
+                temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='fotobox_print_')
                 os.close(temp_fd)
                 
                 img.save(temp_path, 'JPEG', quality=95, optimize=True)
@@ -390,7 +390,7 @@ class PrintManager:
             font_small = ImageFont.load_default()
         
         # Zeichne Test-Inhalt
-        draw.text((50, 50), "📷 Photobox Drucker-Test", font=font_large, fill=(0, 0, 0))
+        draw.text((50, 50), "📷 Fotobox Drucker-Test", font=font_large, fill=(0, 0, 0))
         
         now = datetime.datetime.now()
         draw.text((50, 150), f"Datum: {now.strftime('%d.%m.%Y %H:%M:%S')}", 
@@ -416,7 +416,7 @@ class PrintManager:
                           fill=color)
         
         # Speichere temporäre Test-Datei
-        temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='photobox_test_')
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='fotobox_test_')
         os.close(temp_fd)
         
         img.save(temp_path, 'JPEG', quality=95)

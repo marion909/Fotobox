@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Photobox Flask Application
+Fotobox Flask Application
 Phase 2: Erweiterte Funktionen - Overlays, Drucken, Upload
 """
 
@@ -21,7 +21,7 @@ from upload_manager import UploadManager
 from optimal_camera_manager import optimal_camera_manager
 
 app = Flask(__name__)
-app.secret_key = 'photobox_phase2_secret_key_change_in_production'
+app.secret_key = 'fotobox_phase2_secret_key_change_in_production'
 
 # Phase 2 Konfiguration
 from config import config_manager
@@ -361,7 +361,7 @@ def create_backup():
         import datetime
         
         # Backup-Script ausführen (nur auf Raspberry Pi verfügbar)
-        result = subprocess.run(['/home/pi/backup_photobox.sh'], 
+        result = subprocess.run(['/home/pi/backup_fotobox.sh'], 
                               capture_output=True, text=True, check=False)
         
         if result.returncode == 0:
@@ -405,7 +405,7 @@ def export_config():
         return jsonify({
             'success': True,
             'config': config_data,
-            'filename': f'photobox_config_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+            'filename': f'fotobox_config_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
         })
         
     except Exception as e:
@@ -534,7 +534,7 @@ def filesize_filter(size):
     return f"{size:.1f} TB"
 
 if __name__ == '__main__':
-    print("🚀 Photobox Phase 2 startet...")
+    print("🚀 Fotobox Phase 2 startet...")
     print(f"📁 Fotos werden gespeichert in: {os.path.abspath(config.photo_dir)}")
     print(f"📷 Kamera verbunden: {'✓' if camera.camera_detected else '✗'}")
     print(f"� Overlays aktiviert: {'✓' if config.overlay.enabled else '✗'}")

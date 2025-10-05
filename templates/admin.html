@@ -83,7 +83,7 @@
                 <div class="overlay-options" id="overlay-options" style="display: none;">
                     <div class="form-group">
                         <label>Text-Overlay:</label>
-                        <input type="text" id="overlay-text" placeholder="z.B. Photobox {date}" 
+                        <input type="text" id="overlay-text" placeholder="z.B. Fotobox {date}" 
                                onchange="updateOverlayText()">
                         <small>Verwende {date}, {time}, {datetime} für automatische Werte</small>
                     </div>
@@ -195,7 +195,7 @@
                             <span class="slider"></span>
                         </label>
                         <span>Autostart aktivieren</span>
-                        <small>Startet den Photobox-Service automatisch beim Booten</small>
+                        <small>Startet den Fotobox-Service automatisch beim Booten</small>
                     </div>
                     
                     <div class="form-group">
@@ -656,7 +656,7 @@ function restartSystem() {
 }
 
 function shutdownSystem() {
-    if (confirm('System wirklich herunterfahren? Die Photobox wird komplett ausgeschaltet.')) {
+    if (confirm('System wirklich herunterfahren? Die Fotobox wird komplett ausgeschaltet.')) {
         showLoading();
         
         fetch('/api/system/shutdown', { method: 'POST' })

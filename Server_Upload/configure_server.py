@@ -11,7 +11,7 @@ import os
 # Konfiguration
 SERVER_URL = "https://upload.neuhauser.cloud"
 API_KEY = "GKU52R0RP4EwMnmJg00d52wgW5iEzSV3J3Hv4WBMA0dL8aS0vS"
-ADMIN_PASSWORD = "photobox2025secure!"
+ADMIN_PASSWORD = "fotobox2025secure!"
 
 def update_server_config():
     """Sendet eine Konfigurationsupdate an den Server"""
@@ -58,12 +58,12 @@ def test_upload_with_fixed_config():
     draw = ImageDraw.Draw(img)
     
     # Text hinzufügen
-    text = "Photobox Server Upload Test\nKonfiguration korrigiert"
+    text = "Fotobox Server Upload Test\nKonfiguration korrigiert"
     draw.text((20, 100), text, fill='white')
     
     # Als echte JPEG-Datei speichern
     temp_dir = tempfile.gettempdir()
-    temp_file = os.path.join(temp_dir, 'photobox_test_upload.jpg')
+    temp_file = os.path.join(temp_dir, 'fotobox_test_upload.jpg')
     img.save(temp_file, format='JPEG', quality=85)
     
     print(f"📁 Test-Bild gespeichert: {temp_file}")
@@ -71,7 +71,7 @@ def test_upload_with_fixed_config():
     # Upload durchführen
     headers = {
         'Authorization': f'Bearer {API_KEY}',
-        'User-Agent': 'Photobox-Test/1.0'
+        'User-Agent': 'Fotobox-Test/1.0'
     }
     
     # Öffne echte Datei für Upload  
@@ -84,7 +84,7 @@ def test_upload_with_fixed_config():
         }
         
         metadata = {
-            'source': 'photobox_config_test',
+            'source': 'fotobox_config_test',
             'test_type': 'configuration_validation',
             'timestamp': '2025-10-05 09:50:00'
         }
@@ -238,11 +238,11 @@ def run_comprehensive_test():
         print("⚠️ Einige Tests fehlgeschlagen - bitte prüfen")
         return False
 
-def show_photobox_config():
-    """Zeigt die Konfiguration für die Photobox-App an"""
-    print("\n📱 Photobox-App Konfiguration")
+def show_fotobox_config():
+    """Zeigt die Konfiguration für die Fotobox-App an"""
+    print("\n📱 Fotobox-App Konfiguration")
     print("=" * 40)
-    print("Trage folgende Werte in die Photobox-App ein:")
+    print("Trage folgende Werte in die Fotobox-App ein:")
     print()
     print(f"Upload aktivieren: ✓")
     print(f"Upload-Methode: HTTP")
@@ -257,7 +257,7 @@ def show_photobox_config():
 
 def main():
     """Hauptfunktion"""
-    print("🚀 Photobox Server Upload - Konfiguration & Test")
+    print("🚀 Fotobox Server Upload - Konfiguration & Test")
     print("=" * 60)
     
     # Abhängigkeiten prüfen
@@ -273,8 +273,8 @@ def main():
     # Umfassenden Test durchführen
     success = run_comprehensive_test()
     
-    # Photobox-Konfiguration anzeigen
-    show_photobox_config()
+    # Fotobox-Konfiguration anzeigen
+    show_fotobox_config()
     
     if success:
         print(f"\n🎊 Setup erfolgreich! Server Upload System ist betriebsbereit.")

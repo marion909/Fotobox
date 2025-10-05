@@ -1,5 +1,5 @@
 
-# 📸 Photobox Projekt Roadmap
+# 📸 Fotobox Projekt Roadmap
 
 ## 🧩 Ziel
 Entwicklung einer anpassbaren Fotobox-Anwendung für Raspberry Pi mit Canon EOS 2000D, Touch-Display, Server-Upload und Fotodruck.
@@ -85,4 +85,4 @@ Entwicklung einer anpassbaren Fotobox-Anwendung für Raspberry Pi mit Canon EOS 
 6. [ ] Design & Branding finalisieren
 
 
-© 2025 – Photobox Projekt by ChatGPT & User
+© 2025 – Fotobox Projekt by ChatGPT & User

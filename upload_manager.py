@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Photobox Upload-Manager - Phase 2  
+Fotobox Upload-Manager - Phase 2  
 Verwaltet Upload von Fotos auf Server via HTTP/SFTP
 """
 
@@ -104,7 +104,7 @@ class UploadManager:
                     img = img.resize(new_size, Image.Resampling.LANCZOS)
                 
                 # Speichere komprimierte Version
-                temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='photobox_upload_')
+                temp_fd, temp_path = tempfile.mkstemp(suffix='.jpg', prefix='fotobox_upload_')
                 os.close(temp_fd)
                 
                 img.save(temp_path, 'JPEG', quality=quality, optimize=True)
@@ -132,7 +132,7 @@ class UploadManager:
             'upload_timestamp': now.isoformat(),
             'upload_date': now.strftime('%Y-%m-%d'),
             'upload_time': now.strftime('%H:%M:%S'),
-            'source': 'photobox',
+            'source': 'fotobox',
             'version': self.config.version,
             'checksum': self._calculate_checksum(photo_path)
         }

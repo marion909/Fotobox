@@ -1,14 +1,14 @@
-# 📸 Photobox - Professionelle Fotobox für Events & Hochzeiten
+# 📸 Fotobox - Professionelle Fotobox für Events & Hochzeiten
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://python.org)
 [![Flask](https://img.shields.io/badge/flask-2.3%2B-green)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Phase](https://img.shields.io/badge/phase-4.1%20Production-green)](photobox_roadmap.md)
+[![Phase](https://img.shields.io/badge/phase-4.1%20Production-green)](fotobox_roadmap.md)
 [![Version](https://img.shields.io/badge/version-4.1.0-blue)](VERSION)
 
 Eine vollständige, anpassbare Fotobox-Lösung für Raspberry Pi mit Canon EOS Kameras, Touch-Display, automatischem Drucken und Server-Upload.
 
-![Photobox Demo](https://via.placeholder.com/800x400/007bff/white?text=Photobox+Demo+Screenshot)
+![Fotobox Demo](https://via.placeholder.com/800x400/007bff/white?text=Fotobox+Demo+Screenshot)
 
 ## 🎯 Features
 
@@ -40,7 +40,7 @@ Eine vollständige, anpassbare Fotobox-Lösung für Raspberry Pi mit Canon EOS K
 # Ein Befehl für komplette Installation auf Raspberry Pi:
 curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/install_complete.sh | sudo bash
 ```
-**Nach 10-15 Minuten:** Photobox läuft automatisch! 🎉
+**Nach 10-15 Minuten:** Fotobox läuft automatisch! 🎉
 
 ### 📋 Voraussetzungen
 
@@ -72,7 +72,7 @@ git clone https://github.com/marion909/Fotobox.git
 cd Fotobox
 sudo scripts/install_complete.sh
 ```
-**✅ Das war's! Nach Neustart läuft die Photobox vollautomatisch.**
+**✅ Das war's! Nach Neustart läuft die Fotobox vollautomatisch.**
 
 #### Option 2: 🔧 Manuelle Installation (für Entwickler)
 ```bash
@@ -121,7 +121,7 @@ Die `install_complete.sh` führt folgende Schritte aus:
 - Web-Interface Aktivierung
 - Automatische Benutzer-Konfiguration
 
-**🎯 Photobox-App:**
+**🎯 Fotobox-App:**
 - Repository Clone von GitHub
 - Python-Abhängigkeiten Installation
 - Konfigurationsdatei mit Defaults
@@ -157,20 +157,20 @@ Die `install_complete.sh` führt folgende Schritte aus:
 ### ⚡ **Quick-Commands nach Installation**
 ```bash
 # System-Status prüfen
-sudo systemctl status photobox          # Service-Status  
+sudo systemctl status fotobox          # Service-Status  
 /home/pi/test_hardware.sh              # Vollständiger Hardware-Test
 
 # Service-Verwaltung
-sudo systemctl start photobox          # Service starten
-sudo systemctl restart photobox        # Service neustarten
-sudo journalctl -u photobox -f         # Live-Logs anzeigen
+sudo systemctl start fotobox          # Service starten
+sudo systemctl restart fotobox        # Service neustarten
+sudo journalctl -u fotobox -f         # Live-Logs anzeigen
 
 # Updates & Wartung
-sudo scripts/update_photobox.sh        # Sichere Update-Installation
+sudo scripts/update_fotobox.sh        # Sichere Update-Installation
 scripts/fix_camera_usb.sh              # Kamera-USB-Probleme beheben
 scripts/fix_camera_busy.sh             # Canon EOS Device-Busy-Probleme beheben
 scripts/fix_camera_busy.sh --test 5    # Teste 5 aufeinanderfolgende Aufnahmen
-sudo scripts/cleanup_photobox.sh       # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
+sudo scripts/cleanup_fotobox.sh       # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
 sudo reboot                            # Bei Problemen: Neustart
 ```
 
@@ -178,26 +178,26 @@ sudo reboot                            # Bei Problemen: Neustart
 ```bash
 # Sichere Update-Installation (empfohlen):
 cd /home/pi/Fotobox
-sudo scripts/update_photobox.sh
+sudo scripts/update_fotobox.sh
 
 # Manuelle Git-Update (für Entwickler):
 git stash                              # Lokale Änderungen sichern
 git pull                               # Updates holen
 git stash pop                          # Änderungen wiederherstellen
-sudo systemctl restart photobox       # Service neustarten
+sudo systemctl restart fotobox       # Service neustarten
 ```
 
 ### 🧹 **Vollständige Deinstallation**
 ```bash
-# Komplette Photobox-Entfernung (alle Daten werden gelöscht!):
+# Komplette Fotobox-Entfernung (alle Daten werden gelöscht!):
 cd /home/pi/Fotobox
-sudo scripts/cleanup_photobox.sh
+sudo scripts/cleanup_fotobox.sh
 
 # Oder direkt per curl (automatischer Modus):
-curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/cleanup_photobox.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/cleanup_fotobox.sh | sudo bash
 
 # Manuelle Bestätigung bei lokaler Ausführung:
-sudo scripts/cleanup_photobox.sh --force
+sudo scripts/cleanup_fotobox.sh --force
 
 # ⚠️ WARNUNG: Alle Fotos, Konfigurationen und Services werden entfernt!
 ```
@@ -288,8 +288,8 @@ chmod +x scripts/install_autostart.sh
 sudo scripts/install_autostart.sh
 
 # Service-Status prüfen
-sudo systemctl status photobox
-sudo systemctl enable photobox
+sudo systemctl status fotobox
+sudo systemctl enable fotobox
 ```
 
 ### Vollbild-Browser konfigurieren
@@ -333,7 +333,7 @@ Fotobox/
 ├── config.py                 # Konfigurationsmanagement
 ├── requirements.txt          # Python-Abhängigkeiten
 ├── config.json              # App-Konfiguration (wird erstellt)
-├── photobox_roadmap.md      # Entwicklungs-Roadmap
+├── fotobox_roadmap.md      # Entwicklungs-Roadmap
 │
 ├── static/                  # Statische Web-Dateien
 │   ├── css/style.css       # Haupt-Stylesheet
@@ -365,8 +365,8 @@ Fotobox/
 │   ├── setup_printer.sh   # Drucker-Setup
 │   ├── fix_camera_usb.sh  # USB-Kamera Fix Script  
 │   ├── fix_camera_busy.sh # Canon Device-Busy Fix
-│   ├── update_photobox.sh # Sichere Update-Installation
-│   └── cleanup_photobox.sh # Vollständige Deinstallation
+│   ├── update_fotobox.sh # Sichere Update-Installation
+│   └── cleanup_fotobox.sh # Vollständige Deinstallation
 ```
 
 ## 🎯 API Endpoints
@@ -416,19 +416,19 @@ curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/dia
 **Häufigste Probleme & Schnell-Fixes:**
 ```bash
 # Service prüfen und starten:
-sudo systemctl status photobox
-sudo systemctl start photobox
-sudo systemctl enable photobox
+sudo systemctl status fotobox
+sudo systemctl start fotobox
+sudo systemctl enable fotobox
 
 # Service-Logs anzeigen:
-sudo journalctl -u photobox -f
+sudo journalctl -u fotobox -f
 
 # Virtual Environment neu erstellen:
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 rm -rf .venv
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-sudo systemctl restart photobox
+sudo systemctl restart fotobox
 ```
 
 📋 **Detaillierte Anleitung:** [Frontend Troubleshooting Guide](docs/troubleshooting-frontend.md)
@@ -626,8 +626,8 @@ lsusb | grep -i canon
 ```
 
 ### Log-Dateien
-- **App-Logs:** `tail -f logs/photobox.log`
-- **System-Logs:** `journalctl -u photobox -f`
+- **App-Logs:** `tail -f logs/fotobox.log`
+- **System-Logs:** `journalctl -u fotobox -f`
 - **Upload-Logs:** Siehe Server `uploads/upload_log.json`
 
 ### Debug-Modus
@@ -707,7 +707,7 @@ gphoto2 --set-config /main/imgsettings/iso=1         # Auto ISO
 - [ ] Server-Upload (HTTP POST)
 ## 🗺️ Roadmap
 
-Siehe detaillierte Entwicklungs-Roadmap: [photobox_roadmap.md](photobox_roadmap.md)
+Siehe detaillierte Entwicklungs-Roadmap: [fotobox_roadmap.md](fotobox_roadmap.md)
 
 ### ✅ **Abgeschlossen:**
 - **Phase 1** - Grundfunktionen ✅

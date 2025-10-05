@@ -1,6 +1,6 @@
 <?php
 /**
- * Photobox Galerie - Einfache Web-Galerie für hochgeladene Fotos
+ * fotobox Galerie - Einfache Web-Galerie für hochgeladene Fotos
  */
 
 require_once 'config.php';
@@ -164,7 +164,7 @@ function deleteDirectory($dir) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photobox Galerie</title>
+    <title>fotobox Galerie</title>
     <style>
         * {
             margin: 0;
@@ -434,7 +434,7 @@ function deleteDirectory($dir) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 Photobox Galerie</h1>
+            <h1>📸 fotobox Galerie</h1>
             
             <?php if (isset($_SESSION['admin_logged_in'])): ?>
                 <a href="?logout=1" class="admin-toggle">Admin Logout</a>

@@ -1,5 +1,5 @@
 /**
- * Photobox JavaScript - Touch-optimierte Funktionen
+ * Fotobox JavaScript - Touch-optimierte Funktionen
  * Phase 1: Grundfunktionen für Kamerasteuerung und UI
  */
 
@@ -9,7 +9,7 @@ let currentNotification = null;
 
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📱 Photobox App gestartet');
+    console.log('📱 Fotobox App gestartet');
     
     // Touch-optimierte Event-Listener
     setupTouchEvents();
@@ -394,11 +394,11 @@ function loadFromLocalStorage(key, defaultValue = null) {
 
 // App-Einstellungen
 function saveAppSettings(settings) {
-    saveToLocalStorage('photobox_settings', settings);
+    saveToLocalStorage('fotobox_settings', settings);
 }
 
 function loadAppSettings() {
-    return loadFromLocalStorage('photobox_settings', {
+    return loadFromLocalStorage('fotobox_settings', {
         autoUpload: false,
         autoPrint: false,
         countdown: 3,
@@ -491,7 +491,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Export für Modularität (falls benötigt)
-window.PhotoboxApp = {
+window.FotoboxApp = {
     showLoading,
     hideLoading,
     showNotification,

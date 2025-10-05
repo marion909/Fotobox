@@ -1,4 +1,4 @@
-# Canon EDSDK Integration für Photobox
+# Canon EDSDK Integration für Fotobox
 
 ## ⚠️ WICHTIGER HINWEIS: EDSDK.dll Distribution
 
@@ -34,10 +34,10 @@ Unser **Modern Camera Manager** verwendet ein intelligentes **Fallback-System**:
 # Download: Canon EDSDK for Windows/Linux
 ```
 
-### Schritt 2: EDSDK in Photobox integrieren  
+### Schritt 2: EDSDK in Fotobox integrieren  
 ```bash
 # EDSDK.dll ins EDSDK/ Verzeichnis kopieren:
-cp /path/to/downloaded/EDSDK.dll /home/pi/Photobox/EDSDK/
+cp /path/to/downloaded/EDSDK.dll /home/pi/Fotobox/EDSDK/
 
 # Aktivierungs-Script ausführen:
 curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/activate_edsdk_complete.sh | sudo bash
@@ -106,7 +106,7 @@ Daher ist unser **Multi-API Fallback-Ansatz** die beste Lösung:
 
 Dieses Projekt respektiert alle Urheberrechte:
 
-- **Photobox Code**: MIT License (Open Source)
+- **Fotobox Code**: MIT License (Open Source)
 - **gphoto2**: LGPL (Open Source, eingebunden als externe Abhängigkeit)
 - **Canon EDSDK**: Proprietär (Benutzer muss eigene Lizenz erwerben)
 

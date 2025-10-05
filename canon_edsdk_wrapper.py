@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Canon EDSDK Python Wrapper
-Direkter Zugriff auf Canon EDSDK über ctypes für Photobox
+Direkter Zugriff auf Canon EDSDK über ctypes für Fotobox
 """
 
 import os

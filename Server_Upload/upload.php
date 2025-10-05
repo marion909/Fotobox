@@ -1,6 +1,6 @@
 <?php
 /**
- * Photobox Server Upload Handler - Ultra Compatible Version
+ * Fotobox Server Upload Handler - Ultra Compatible Version
  * Funktioniert mit minimalsten PHP-Installationen
  */
 
@@ -299,7 +299,7 @@ try {
         $extension = ($file_type === 'image/png') ? 'png' : 'jpg';
     }
     
-    $filename = "photobox_{$timestamp}_{$random}.{$extension}";
+    $filename = "fotobox_{$timestamp}_{$random}.{$extension}";
     
     // Zielverzeichnis (nach Datum organisiert)
     $date_dir = date('Y/m/d');

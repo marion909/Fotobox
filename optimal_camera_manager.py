@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Optimaler Camera Manager für Photobox
+Optimaler Camera Manager für Fotobox
 Nur gphoto2 Python - beste Balance aus Einfachheit und Zuverlässigkeit
 """
 

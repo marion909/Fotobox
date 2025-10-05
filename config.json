@@ -1,5 +1,5 @@
 {
-  "app_name": "Photobox",
+  "app_name": "Fotobox",
   "version": "4.1.0",
   "debug_mode": false,
   "photo_dir": "photos",
@@ -18,7 +18,7 @@
     "logo_size": 150,
     "logo_opacity": 0.8,
     "text_enabled": false,
-    "text_content": "Photobox Event 2025",
+    "text_content": "Fotobox Event 2025",
     "text_position": "bottom-center",
     "text_font_size": 48,
     "text_color": "#FFFFFF",

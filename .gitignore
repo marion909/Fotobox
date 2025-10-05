@@ -1,4 +1,4 @@
-# Photobox .gitignore
+# Fotobox .gitignore
 
 # Python
 __pycache__/
@@ -24,7 +24,7 @@ wheels/
 MANIFEST
 
 # Virtual Environment
-photobox-env/
+fotobox-env/
 venv/
 env/
 ENV/
@@ -33,7 +33,7 @@ ENV/
 instance/
 .webassets-cache
 
-# Photobox spezifisch
+# Fotobox spezifisch
 photos/
 !photos/.gitkeep
 temp/

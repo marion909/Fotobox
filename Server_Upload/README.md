@@ -1,17 +1,17 @@
-# Photobox Server Upload
+# fotobox Server Upload
 
-PHP-basiertes Upload-System für die Photobox-Anwendung.
+PHP-basiertes Upload-System für die fotobox-Anwendung.
 
 ## 📋 Übersicht
 
-Dieses System ermöglicht es der Photobox-Anwendung, Fotos auf einen Webserver hochzuladen und über eine Web-Galerie anzuzeigen.
+Dieses System ermöglicht es der fotobox-Anwendung, Fotos auf einen Webserver hochzuladen und über eine Web-Galerie anzuzeigen.
 
 ## 🚀 Installation
 
 ### 1. Dateien hochladen
 Laden Sie alle Dateien in ein Verzeichnis auf Ihrem Webserver hoch:
 ```
-/photobox/
+/fotobox/
 ├── upload.php
 ├── config.php
 ├── gallery.php
@@ -21,7 +21,7 @@ Laden Sie alle Dateien in ein Verzeichnis auf Ihrem Webserver hoch:
 
 ### 2. Berechtigungen setzen
 ```bash
-chmod 755 /pfad/zum/photobox/
+chmod 755 /pfad/zum/fotobox/
 chmod 644 *.php
 mkdir uploads
 chmod 755 uploads/
@@ -35,15 +35,15 @@ Bearbeiten Sie `config.php`:
 define('API_KEY', 'ihr-sicherer-api-key-hier');
 
 // Basis-URL anpassen
-define('BASE_URL', 'https://ihre-domain.com/photobox');
+define('BASE_URL', 'https://ihre-domain.com/fotobox');
 
 // Admin-Passwort ändern
 define('ADMIN_PASSWORD', 'ihr-sicheres-passwort');
 ```
 
-### 4. Photobox-App konfigurieren
-In der Photobox-App unter "Admin" → "Upload-Einstellungen":
-- **Upload-URL**: `https://ihre-domain.com/photobox/upload.php`
+### 4. fotobox-App konfigurieren
+In der fotobox-App unter "Admin" → "Upload-Einstellungen":
+- **Upload-URL**: `https://ihre-domain.com/fotobox/upload.php`
 - **API-Key**: Der gleiche Key aus `config.php`
 
 ## 🔧 Konfiguration
@@ -87,14 +87,14 @@ define('AUTO_DELETE_DAYS', 30);
 
 ## 📱 Verwendung
 
-### Upload via Photobox
-1. Foto in der Photobox-App aufnehmen
+### Upload via fotobox
+1. Foto in der fotobox-App aufnehmen
 2. "Hochladen" auswählen
 3. Foto wird automatisch übertragen
 4. Bestätigung in der App
 
 ### Web-Galerie
-- **URL**: `https://ihre-domain.com/photobox/gallery.php`
+- **URL**: `https://ihre-domain.com/fotobox/gallery.php`
 - **Admin-Bereich**: Login-Button oben rechts
 - **Funktionen**: Fotos anzeigen, löschen (als Admin)
 
@@ -118,9 +118,9 @@ Parameter:
     "message": "File uploaded successfully",
     "data": {
         "id": "abc123def",
-        "filename": "photobox_2024-01-01_12-34-56_abc123def.jpg",
-        "url": "https://domain.com/photobox/uploads/2024/01/01/photobox_2024-01-01_12-34-56_abc123def.jpg",
-        "thumbnail": "https://domain.com/photobox/uploads/2024/01/01/thumbnails/thumb_photobox_2024-01-01_12-34-56_abc123def.jpg",
+        "filename": "fotobox_2024-01-01_12-34-56_abc123def.jpg",
+        "url": "https://domain.com/fotobox/uploads/2024/01/01/fotobox_2024-01-01_12-34-56_abc123def.jpg",
+        "thumbnail": "https://domain.com/fotobox/uploads/2024/01/01/thumbnails/thumb_fotobox_2024-01-01_12-34-56_abc123def.jpg",
         "size": 1234567,
         "upload_time": "2024-01-01 12:34:56"
     }
@@ -154,9 +154,9 @@ uploads/
 ├── 2024/
 │   ├── 01/
 │   │   ├── 01/
-│   │   │   ├── photobox_2024-01-01_12-34-56_abc123def.jpg
+│   │   │   ├── fotobox_2024-01-01_12-34-56_abc123def.jpg
 │   │   │   └── thumbnails/
-│   │   │       └── thumb_photobox_2024-01-01_12-34-56_abc123def.jpg
+│   │   │       └── thumb_fotobox_2024-01-01_12-34-56_abc123def.jpg
 │   │   └── 02/
 │   └── 02/
 └── upload_log.json
@@ -167,13 +167,13 @@ uploads/
 [
     {
         "id": "abc123def",
-        "filename": "photobox_2024-01-01_12-34-56_abc123def.jpg",
+        "filename": "fotobox_2024-01-01_12-34-56_abc123def.jpg",
         "original_name": "IMG_001.jpg",
         "size": 1234567,
         "type": "image/jpeg",
-        "path": "/var/www/photobox/uploads/2024/01/01/photobox_2024-01-01_12-34-56_abc123def.jpg",
-        "url": "https://domain.com/photobox/uploads/2024/01/01/photobox_2024-01-01_12-34-56_abc123def.jpg",
-        "thumbnail": "https://domain.com/photobox/uploads/2024/01/01/thumbnails/thumb_photobox_2024-01-01_12-34-56_abc123def.jpg",
+        "path": "/var/www/fotobox/uploads/2024/01/01/fotobox_2024-01-01_12-34-56_abc123def.jpg",
+        "url": "https://domain.com/fotobox/uploads/2024/01/01/fotobox_2024-01-01_12-34-56_abc123def.jpg",
+        "thumbnail": "https://domain.com/fotobox/uploads/2024/01/01/thumbnails/thumb_fotobox_2024-01-01_12-34-56_abc123def.jpg",
         "upload_time": "2024-01-01 12:34:56",
         "metadata": {}
     }
@@ -228,7 +228,7 @@ define('AUTO_DELETE_DAYS', 30);
 ```bash
 #!/bin/bash
 # Backup der Upload-Dateien
-tar -czf photobox_backup_$(date +%Y%m%d).tar.gz uploads/
+tar -czf fotobox_backup_$(date +%Y%m%d).tar.gz uploads/
 ```
 
 ### Log-Rotation
@@ -249,14 +249,14 @@ define('NOTIFICATION_TO', 'admin@domain.com');
 ### Wasserzeichen
 ```php
 define('ADD_WATERMARK', true);
-define('WATERMARK_TEXT', 'Photobox © 2024');
+define('WATERMARK_TEXT', 'fotobox © 2024');
 ```
 
 ### Datenbank-Integration
 ```php
 define('USE_DATABASE', true);
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'photobox');
+define('DB_NAME', 'fotobox');
 ```
 
 ## 📞 Support

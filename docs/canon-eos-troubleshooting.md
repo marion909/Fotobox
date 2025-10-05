@@ -124,13 +124,13 @@ sudo systemctl stop gvfs-daemon
 sudo modprobe -r uvcvideo
 sleep 5
 sudo modprobe uvcvideo
-sudo systemctl restart photobox
+sudo systemctl restart fotobox
 ```
 
 ### **Schritt 3: Test-Aufnahme**
 ```bash
 # Direkte Aufnahme testen:
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 .venv/bin/python -c "
 from camera_manager import CameraManager
 cam = CameraManager()
@@ -139,17 +139,17 @@ print('✅ Erfolg!' if result['success'] else f'❌ Fehler: {result[\"error\"]}'
 "
 ```
 
-## 📋 **Photobox App Logs prüfen**
+## 📋 **Fotobox App Logs prüfen**
 
 ```bash
-# Live Logs der Photobox App:
-sudo journalctl -u photobox -f
+# Live Logs der Fotobox App:
+sudo journalctl -u fotobox -f
 
 # Kamera-spezifische Logs:
-tail -f /var/log/photobox_app.log | grep -i camera
+tail -f /var/log/fotobox_app.log | grep -i camera
 
 # Fehler-Logs:
-sudo journalctl -u photobox | grep -i "error\|fail\|exception"
+sudo journalctl -u fotobox | grep -i "error\|fail\|exception"
 ```
 
 ## 🎯 **Canon EOS Modell-spezifische Tipps**
@@ -179,10 +179,10 @@ sudo modprobe uvcvideo
 # USB neu anschließen
 ```
 
-### **Photobox App erkennt Kamera nicht:**
+### **Fotobox App erkennt Kamera nicht:**
 ```bash
 # App mit Kamera-Debug starten:
-cd /home/pi/Photobox
+cd /home/pi/Fotobox
 DEBUG=1 .venv/bin/python app.py
 ```
 
@@ -214,8 +214,8 @@ Nach dem Fix sollten diese Tests erfolgreich sein:
 ```bash
 ✅ gphoto2 --auto-detect          # Zeigt Kamera
 ✅ gphoto2 --capture-image        # Macht Foto
-✅ curl http://localhost:5000     # Photobox erreichbar
-✅ Foto-Button in Photobox        # Funktioniert
+✅ curl http://localhost:5000     # Fotobox erreichbar
+✅ Foto-Button in Fotobox        # Funktioniert
 ```
 
 **Die meisten Canon EOS Probleme sind USB/Software-Konflikte die sich mit den obigen Schritten lösen lassen!** 📸

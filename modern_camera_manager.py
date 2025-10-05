@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Modern Camera Manager für Photobox - Canon EDSDK Integration
+Modern Camera Manager für Fotobox - Canon EDSDK Integration
 Ersetzt gphoto2 für robustere Canon EOS Unterstützung
 """
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Photobox Server Upload - Konfiguration
+ * fotobox Server Upload - Konfiguration
  * Zentrale Konfigurationsdatei für den Upload-Server
  */
 
@@ -46,7 +46,7 @@ define('ENABLE_GALLERY', true);
 define('GALLERY_ITEMS_PER_PAGE', 20);
 
 // Admin-Passwort für Galerie-Verwaltung
-define('ADMIN_PASSWORD', 'photobox2025secure!');
+define('ADMIN_PASSWORD', 'fotobox2025secure!');
 
 // =====================================
 // E-MAIL-BENACHRICHTIGUNGEN
@@ -63,7 +63,7 @@ define('SMTP_PASSWORD', 'your-app-password');
 define('SMTP_ENCRYPTION', 'tls'); // 'tls' oder 'ssl'
 
 // Benachrichtigungs-E-Mails
-define('NOTIFICATION_FROM', 'photobox@your-domain.com');
+define('NOTIFICATION_FROM', 'fotobox@your-domain.com');
 define('NOTIFICATION_TO', 'admin@your-domain.com');
 
 // =====================================
@@ -98,8 +98,8 @@ define('USE_DATABASE', false);
 
 // Datenbank-Konfiguration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'photobox');
-define('DB_USER', 'photobox_user');
+define('DB_NAME', 'fotobox');
+define('DB_USER', 'fotobox_user');
 define('DB_PASS', 'secure_password');
 define('DB_CHARSET', 'utf8mb4');
 
@@ -109,7 +109,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Wasserzeichen hinzufügen?
 define('ADD_WATERMARK', false);
-define('WATERMARK_TEXT', 'Photobox © 2024');
+define('WATERMARK_TEXT', 'fotobox © 2024');
 define('WATERMARK_FONT_SIZE', 12);
 define('WATERMARK_OPACITY', 50);
 
