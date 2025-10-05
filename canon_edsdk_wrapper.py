@@ -63,38 +63,85 @@ class CanonEDSDK:
         self._load_edsdk_dll()
     
     def _load_edsdk_dll(self):
-        """Lädt die EDSDK DLL"""
+        """Lädt die EDSDK DLL mit robuster Architektur-Erkennung"""
         try:
-            # Suche nach EDSDK DLL in verschiedenen Pfaden
-            dll_paths = [
-                os.path.join(EDSDK_PATH, 'EDSDK.dll'),
-                os.path.join(EDSDK_PATH, 'EDSDK64.dll'),
-                'EDSDK.dll',
-                'EDSDK64.dll'
-            ]
+            import platform
+            is_64bit = platform.machine().endswith('64')
             
-            for dll_path in dll_paths:
+            # Priorisiere DLL-Varianten basierend auf System-Architektur
+            if is_64bit:
+                dll_candidates = [
+                    os.path.join(EDSDK_PATH, 'EDSDK64.dll'),
+                    os.path.join(EDSDK_PATH, 'EDSDK.dll'),
+                    'EDSDK64.dll',
+                    'EDSDK.dll'
+                ]
+            else:
+                dll_candidates = [
+                    os.path.join(EDSDK_PATH, 'EDSDK.dll'),
+                    os.path.join(EDSDK_PATH, 'EDSDK32.dll'),
+                    'EDSDK.dll', 
+                    'EDSDK32.dll'
+                ]
+            
+            print(f"🔍 Suche EDSDK DLL für {platform.machine()} Architektur...")
+            
+            for dll_path in dll_candidates:
                 if os.path.exists(dll_path):
                     try:
-                        self.dll = ctypes.WinDLL(dll_path)
-                        print(f"✅ EDSDK DLL geladen: {dll_path}")
-                        self._setup_function_prototypes()
-                        return
-                    except OSError as e:
-                        print(f"⚠️ Fehler beim Laden von {dll_path}: {e}")
+                        # Versuche verschiedene DLL-Loader
+                        loaders = [ctypes.WinDLL, ctypes.CDLL]
+                        
+                        for loader in loaders:
+                            try:
+                                self.dll = loader(dll_path)
+                                print(f"✅ EDSDK DLL geladen: {dll_path} (mit {loader.__name__})")
+                                self._setup_function_prototypes()
+                                return
+                            except OSError as loader_error:
+                                if "zulässige Win32-Anwendung" in str(loader_error):
+                                    print(f"  ⚠️ Architektur-Konflikt: {os.path.basename(dll_path)}")
+                                    break  # Versuche nächste DLL
+                                else:
+                                    print(f"  ⚠️ Loader {loader.__name__} Fehler: {loader_error}")
+                                    continue  # Versuche nächsten Loader
+                            
+                    except Exception as e:
+                        print(f"⚠️ Allgemeiner Fehler mit {dll_path}: {e}")
                         continue
+                else:
+                    print(f"  ❌ Nicht gefunden: {dll_path}")
             
-            # Fallback: Versuche System-DLL
+            # Fallback: System-DLL
+            print("🔄 Versuche System-EDSDK...")
             try:
                 self.dll = ctypes.WinDLL('EDSDK')
                 print("✅ System EDSDK DLL geladen")
                 self._setup_function_prototypes()
+                return
             except OSError:
-                print("❌ EDSDK DLL nicht gefunden")
-                raise ImportError("Canon EDSDK DLL nicht verfügbar")
+                pass
+            
+            # Letzte Chance: Prüfe ob im PATH
+            import shutil
+            if shutil.which('EDSDK.dll'):
+                try:
+                    self.dll = ctypes.WinDLL(shutil.which('EDSDK.dll'))
+                    print("✅ EDSDK DLL aus PATH geladen")
+                    self._setup_function_prototypes()
+                    return
+                except OSError:
+                    pass
+            
+            print("❌ Keine kompatible EDSDK DLL gefunden")
+            print("💡 Mögliche Lösungen:")
+            print("   - Lade 64-bit EDSDK für 64-bit Python herunter")
+            print("   - Oder verwende 32-bit Python für 32-bit EDSDK")
+            print("   - Prüfe Canon Developer Portal für aktuelle Version")
+            raise ImportError("Canon EDSDK DLL nicht kompatibel oder verfügbar")
                 
         except Exception as e:
-            print(f"❌ EDSDK Fehler: {e}")
+            print(f"❌ EDSDK Loader Fehler: {e}")
             raise
     
     def _setup_function_prototypes(self):
