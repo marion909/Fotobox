@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# Photobox Komplette Installation & Konfiguration
+# Photobox Komplette Installation & Konfiguration  
 # Dieses Script installiert und konfiguriert die gesamte Photobox-Anwendung
+# Version: 4.1.0-fixed
 
 set -e  # Exit bei Fehlern
-set -u  # Exit bei undefinierten Variablen
+
+# Debug: Script-Start bestätigen  
+echo "📸 Photobox Installer v4.1.0 gestartet..."
 
 # Konfiguration
 INSTALL_DIR="/home/pi/Photobox"
@@ -40,6 +43,9 @@ print_step() {
     echo ""
     echo -e "${PURPLE}=== $1 ===${NC}"
 }
+
+# Debug: Funktionen definiert
+echo "✅ Funktionen erfolgreich definiert"
 
 # Non-Interactive Mode für automatische Installation
 export DEBIAN_FRONTEND=noninteractive
