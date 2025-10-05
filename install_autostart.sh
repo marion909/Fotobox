@@ -1,23 +1,58 @@
 #!/bin/bash
 
-# Photobox Autostart Service Installation Script
-# Installiert systemd Service für automatischen Start der Photobox-Anwendung
+# 🚀 Photobox Autostart Service Installer - Enhanced Version
+# Installiert und konfiguriert vollautomatischen Start mit erweiterten Features
 
+set -e
+
+# Farben für Output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
+echo -e "${BLUE}🚀 Photobox Autostart Service Installer - Enhanced${NC}"
+echo "=================================================="
+echo ""
+
+# Funktionen
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_step() {
+    echo ""
+    echo -e "${PURPLE}=== $1 ===${NC}"
+}
+
+# Variablen
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_NAME="photobox"
-USER="pi"
+SERVICE_USER="pi"
 
-echo "🚀 Photobox Autostart Service Installation"
-echo "========================================="
-
-# Prüfung ob als root ausgeführt
+# Root-Check
 if [ "$EUID" -ne 0 ]; then
-    echo "❌ Bitte als root ausführen: sudo $0"
+    print_error "Dieses Script muss als root ausgeführt werden:"
+    echo "sudo $0"
     exit 1
 fi
 
-# Service-Datei erstellen
-echo "📝 Erstelle systemd Service..."
+print_step "Service-Installation"
+print_status "Erstelle erweiterten systemd Service..."
 cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
 [Unit]
 Description=Photobox Flask Application

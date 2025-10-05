@@ -1,7 +1,30 @@
+# Photobox - Professional Photo Booth System
+# Python Dependencies für alle Phasen
+
+# Core Framework (Phase 1)
 flask==3.0.0
 pillow==10.4.0
 requests==2.32.3
+werkzeug==3.0.1
 
-# Phase 2 Dependencies
-paramiko==3.3.1  # For SFTP upload
-dataclasses-json==0.6.2  # For configuration management
+# Phase 2 Dependencies - Overlays, Printing, Upload  
+paramiko==3.3.1
+dataclasses-json==0.6.2
+
+# Phase 3 Dependencies - Kiosk & Deployment
+gunicorn==21.2.0
+python-dotenv==1.0.0
+
+# Phase 4 Dependencies - Extended Features
+qrcode[pil]==7.4.2          # Phase 4.2 - QR-Code Generation
+opencv-python==4.8.1.78     # Phase 4.3 - Multi-shot & Image Processing
+
+# Optional Production Dependencies
+psutil==5.9.6               # System monitoring
+schedule==1.2.0             # Automated tasks
+python-dateutil==2.8.2     # Date/time utilities
+
+# Development & Testing (optional)
+pytest==7.4.3              # Testing framework
+black==23.9.1               # Code formatting
+flake8==6.1.0               # Linting
