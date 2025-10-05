@@ -1,120 +1,328 @@
-# 📸 Photobox - Phase 1 Implementierung
+# 📸 Photobox - Professionelle Fotobox für Events & Hochzeiten
 
-## ✅ Was ist implementiert (Phase 1)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://python.org)
+[![Flask](https://img.shields.io/badge/flask-2.3%2B-green)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Phase](https://img.shields.io/badge/phase-4.1-orange)](photobox_roadmap.md)
 
-### Grundfunktionen
-- ✅ Flask-Web-App mit Touch-optimierter UI
-- ✅ Kamera-Controller für gphoto2 Integration
-- ✅ Foto-Aufnahme und lokale Speicherung
-- ✅ Responsive Design für Touch-Displays
-- ✅ Foto-Galerie mit Modal-Ansicht
-- ✅ Admin-Panel für Systemstatus
-- ✅ Auto-Kamera-Erkennung und Status-Updates
+Eine vollständige, anpassbare Fotobox-Lösung für Raspberry Pi mit Canon EOS Kameras, Touch-Display, automatischem Drucken und Server-Upload.
 
-### Features
-- 📱 Touch-optimierte Bedienung
-- 🖼️ Foto-Grid mit Hover-Effekten
-- 📷 Großer Foto-Button (300x300px)
-- 🔄 Auto-Refresh und Status-Updates
-- 📊 System-Status Dashboard
-- 🎨 Modernes UI mit Gradients und Shadows
-- ⌨️ Keyboard-Shortcuts für Entwicklung
-- 📱 Swipe-Navigation zwischen Seiten
+![Photobox Demo](https://via.placeholder.com/800x400/007bff/white?text=Photobox+Demo+Screenshot)
+
+## 🎯 Features
+
+### ✨ **Phase 4.1 - Aktuelle Version**
+- 🎬 **Erweiteter Countdown** - Animierte 3-2-1 Anzeige mit konfigurierbarer Dauer
+- 📱 **Touch-optimierte UI** - Responsive Design für alle Bildschirmgrößen
+- 📸 **Automatische Foto-Aufnahme** - Canon EOS Integration via gphoto2
+- 🖼️ **Foto-Galerie** - Elegante Übersicht aller aufgenommenen Bilder
+- 🎨 **Overlay-System** - Logos, Texte und Rahmen hinzufügen
+- 🖨️ **Automatisches Drucken** - CUPS Integration für sofortigen Fotodruck
+- ☁️ **Server-Upload** - Automatischer Upload zu eigenem Server
+- ⚙️ **Admin-Interface** - Umfassende Konfigurationsmöglichkeiten
+- � **Erweiterte Features** - Konfigurierbare Countdown-Animation
+- �️ **Kiosk-Modus** - Vollbild-Betrieb für Events
+
+### 🔧 **Technische Features**
+- **REST API** für alle Funktionen
+- **Real-time Status** Updates
+- **Responsive Design** für Touch-Displays
+- **Keyboard Shortcuts** für Entwicklung
+- **Automatische Backups** mit konfigurierbarer Retention
+- **System-Monitoring** und Hardware-Tests
+- **Modular aufgebaut** - Einfach erweiterbar
 
 ## 🚀 Schnellstart
 
-### 1. Abhängigkeiten installieren
+### 📋 Voraussetzungen
+
+**Hardware:**
+- Raspberry Pi 4 (empfohlen) oder 3B+
+- Canon EOS Kamera (getestet mit 2000D)
+- 7" Touch-Display oder HDMI-Monitor
+- USB-Kabel für Kamera
+- Fotodrucker (optional, CUPS-kompatibel)
+- 32GB+ SD-Karte (Class 10)
+
+**Software:**
+- Python 3.8+
+- Git
+- gphoto2
+- CUPS (für Drucken)
+
+### 📥 Installation
+
+#### Option 1: Schnell-Installation (empfohlen)
 ```bash
-pip install -r requirements.txt
+# Repository klonen
+git clone https://github.com/marion909/Fotobox.git
+cd Fotobox
+
+# Automatische Installation (Raspberry Pi)
+chmod +x install_complete.sh
+./install_complete.sh
 ```
 
-### 2. App starten
+#### Option 2: Manuelle Installation
 ```bash
+# Repository klonen
+git clone https://github.com/marion909/Fotobox.git
+cd Fotobox
+
+# Virtual Environment erstellen
+python3 -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# oder
+.venv\Scripts\activate     # Windows
+
+# Abhängigkeiten installieren
+pip install -r requirements.txt
+
+# Kamera-Software installieren (Linux)
+sudo apt update
+sudo apt install -y gphoto2 libgphoto2-dev
+
+# App starten
 python app.py
 ```
 
-### 3. Browser öffnen
-```
-http://localhost:5000
-```
+### 🌐 Zugriff
+- **Hauptseite:** `http://localhost:5000`
+- **Admin-Panel:** `http://localhost:5000/admin`
+- **Erweiterte Features:** `http://localhost:5000/features`
+- **Foto-Galerie:** `http://localhost:5000/gallery`
 
-## 🔧 Hardware-Setup (nächste Schritte)
+## 🔧 Konfiguration
 
-### Raspberry Pi Vorbereitung
+### 📷 Kamera-Setup
 ```bash
-# System aktualisieren
-sudo apt update && sudo apt upgrade -y
-
-# Benötigte Pakete installieren
-sudo apt install -y python3-pip git gphoto2 libgphoto2-dev
-
-# Python-Abhängigkeiten
-pip3 install flask pillow requests
-
-# Kamera testen
+# Kamera-Verbindung testen
 gphoto2 --auto-detect
-gphoto2 --summary
+gphoto2 --capture-image-and-download
+
+# USB-Modus der Kamera auf "PC Connect" stellen
+# Kamera sollte als "Canon EOS 2000D" erkannt werden
 ```
 
-### Kamera-Verbindung prüfen
+### 🖨️ Drucker-Setup (optional)
 ```bash
-# Kamera-Status prüfen
-gphoto2 --summary
+# CUPS installieren und konfigurieren
+sudo apt install cups cups-client
+sudo systemctl enable cups
+sudo systemctl start cups
 
-# Testfoto aufnehmen
-gphoto2 --capture-image-and-download --filename test.jpg
+# Web-Interface: http://localhost:631
+# Drucker hinzufügen und testen
 ```
+
+### ☁️ Server-Upload konfigurieren
+1. **Admin-Panel öffnen:** `http://localhost:5000/admin`
+2. **Upload aktivieren** in den Server-Einstellungen
+3. **Endpoint konfigurieren:** `https://your-server.com/upload.php`
+4. **API-Key setzen** für Authentifizierung
+5. **Verbindung testen** über Admin-Panel
+
+### ⏱️ Erweiterte Features
+1. **Features-Seite öffnen:** `http://localhost:5000/features`
+2. **Countdown aktivieren/deaktivieren**
+3. **Countdown-Dauer einstellen** (1-10 Sekunden)
+4. **Countdown testen** über die Test-Funktion
+
+## 🎨 Anpassung
+
+### Themes & Overlays
+```bash
+# Eigenes Logo hinzufügen
+cp your-logo.png overlays/logo.png
+
+# Custom CSS für eigenes Branding
+# Datei: static/css/custom.css erstellen
+```
+
+### Konfiguration
+Alle Einstellungen werden in `config.json` gespeichert:
+```json
+{
+  "countdown_enabled": true,
+  "countdown_duration": 3,
+  "overlay": {
+    "enabled": true,
+    "text_content": "Meine Hochzeit 2025"
+  },
+  "upload": {
+    "enabled": true,
+    "http_endpoint": "https://server.com/upload"
+  }
+}
+```
+
+## 🖥️ Kiosk-Modus (Produktiv-Einsatz)
+
+### Autostart einrichten
+```bash
+# Autostart-Service installieren
+chmod +x install_autostart.sh
+sudo ./install_autostart.sh
+
+# Service-Status prüfen
+sudo systemctl status photobox
+sudo systemctl enable photobox
+```
+
+### Vollbild-Browser konfigurieren
+```bash
+# Chromium im Kiosk-Modus starten
+chromium-browser --kiosk --noerrdialogs --disable-translate --no-first-run --fast --fast-start --disable-default-apps --disable-popup-blocking http://localhost:5000
+```
+
+## 🌐 Server-Upload System
+
+Das Projekt enthält ein vollständiges PHP-Server-Upload-System:
+
+### Server-Seite einrichten
+```bash
+cd Server_Upload/
+
+# Upload-Skript auf Server hochladen
+# Dateien: upload.php, gallery.php, config.php
+
+# Verzeichnisse erstellen
+mkdir uploads
+chmod 755 uploads
+
+# Server testen
+python configure_server.py
+```
+
+### Features des Server-Systems
+- 🔒 **API-Key Authentifizierung**
+- 📁 **Automatische Ordner-Organisation** (Jahr/Monat/Tag)
+- 🖼️ **Thumbnail-Generierung**
+- 🌐 **Web-Galerie** für alle Uploads
+- 🛡️ **Sicherheitsfeatures** (.htaccess, Input-Validation)
+- 🔄 **Automatische Bereinigung** alter Dateien
 
 ## 📂 Projektstruktur
 
 ```
-photobox/
-├── app.py                 # Haupt-Flask-Anwendung
-├── requirements.txt       # Python-Abhängigkeiten
-├── templates/            # HTML-Templates
-│   ├── base.html         # Basis-Template
-│   ├── index.html        # Hauptseite (Foto-UI)
-│   ├── gallery.html      # Foto-Galerie
-│   └── admin.html        # Admin-Panel
-├── static/               # Statische Dateien
-│   ├── css/
-│   │   └── style.css     # Hauptstylsheet
+Fotobox/
+├── app.py                    # Haupt-Flask-Anwendung
+├── config.py                 # Konfigurationsmanagement
+├── requirements.txt          # Python-Abhängigkeiten
+├── config.json              # App-Konfiguration (wird erstellt)
+├── photobox_roadmap.md      # Entwicklungs-Roadmap
+│
+├── static/                  # Statische Web-Dateien
+│   ├── css/style.css       # Haupt-Stylesheet
 │   └── js/
-│       └── app.js        # JavaScript-Funktionen
-├── photos/               # Aufgenommene Fotos (wird erstellt)
-├── overlays/             # Overlay-Bilder (Phase 2)
-└── temp/                 # Temporäre Dateien
+│       ├── app.js          # Haupt-JavaScript
+│       └── countdown.js    # Countdown-Funktionen (Phase 4)
+│
+├── templates/              # HTML-Templates
+│   ├── base.html          # Basis-Template
+│   ├── index.html         # Hauptseite
+│   ├── admin.html         # Admin-Panel
+│   ├── gallery.html       # Foto-Galerie
+│   └── features.html      # Erweiterte Features (Phase 4)
+│
+├── photos/                # Aufgenommene Fotos (wird erstellt)
+├── overlays/              # Logo & Overlay-Dateien
+├── temp/                  # Temporäre Dateien
+├── backups/               # System-Backups
+│
+├── Server_Upload/         # PHP Server-Upload System
+│   ├── upload.php         # Haupt-Upload-Handler
+│   ├── gallery.php        # Server-Galerie
+│   ├── config.php         # Server-Konfiguration
+│   └── README.md          # Server-Dokumentation
+│
+└── scripts/               # Setup & Deployment
+    ├── install_complete.sh # Komplette Auto-Installation
+    ├── install_autostart.sh # Autostart-Service
+    └── setup_system.sh     # System-Vorbereitung
 ```
 
 ## 🎯 API Endpoints
 
+### Haupt-Funktionen
 - `GET /` - Hauptseite mit Foto-Button
 - `GET /gallery` - Foto-Galerie
 - `GET /admin` - Admin-Panel
+- `GET /features` - Erweiterte Features (Phase 4)
+
+### REST API
 - `POST /api/take_photo` - Foto aufnehmen
 - `GET /api/camera_status` - Kamera-Status prüfen
-- `GET /api/test_camera` - Kamera-Test mit Details
+- `GET /api/test_camera` - Ausführlicher Kamera-Test
+- `GET/POST /api/config` - Konfiguration abrufen/setzen
+- `GET/POST /api/countdown` - Countdown-Einstellungen (Phase 4)
+- `POST /api/test_upload` - Server-Upload testen
+- `POST /api/test_printer` - Drucker-Test
 - `GET /photo/<filename>` - Einzelnes Foto abrufen
 
-## 🎨 UI/UX Features
+## 🎨 Bedienung
 
-### Touch-Optimierung
-- Große Touch-Targets (min. 44px)
-- Swipe-Navigation zwischen Seiten
-- Vibrations-Feedback (falls verfügbar)
-- Zoom-Verhinderung bei Doppeltipp
+### Touch-Interface
+- **Großer Foto-Button** - Foto mit Countdown aufnehmen
+- **Navigation unten** - Zwischen Seiten wechseln
+- **Galerie** - Fotos anzeigen, drucken, teilen
+- **Admin** - Alle Einstellungen konfigurieren
+- **Features** - Erweiterte Funktionen verwalten
 
-### Responsive Design
-- Funktioniert auf Desktop und Touch-Displays
-- Optimiert für 7" Raspberry Pi Displays
-- Skaliert von 320px bis 1920px Breite
+### Keyboard-Shortcuts (Entwicklung)
+- `Space` - Foto aufnehmen
+- `G` - Galerie öffnen
+- `A` - Admin-Panel öffnen
+- `H` - Zurück zur Hauptseite
+- `ESC` - Modal schließen / Countdown abbrechen
 
-### Accessibility
-- Keyboard-Navigation (Space, G, A, H, ESC)
-- Hohe Kontraste und große Schriften
-- Barrierefreie Farbkombinationen
+## 🔍 Fehlerbehebung
 
-## 🔍 Debugging
+### Häufige Probleme
+
+**Kamera nicht erkannt:**
+```bash
+# USB-Verbindung prüfen
+lsusb | grep Canon
+
+# gphoto2 Prozesse beenden
+sudo killall gphoto2
+
+# Kamera neu verbinden und testen
+gphoto2 --auto-detect
+```
+
+**Port bereits belegt:**
+```bash
+# Andere Flask-Apps beenden
+sudo pkill -f python
+sudo pkill -f flask
+
+# Port-Status prüfen
+sudo netstat -tulpn | grep :5000
+```
+
+**Permissions-Probleme:**
+```bash
+# Benutzer zu nötigen Gruppen hinzufügen
+sudo usermod -a -G dialout,plugdev $USER
+
+# Udev-Regeln für Kamera
+sudo cp scripts/99-gphoto2.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+```
+
+### Log-Dateien
+- **App-Logs:** `tail -f logs/photobox.log`
+- **System-Logs:** `journalctl -u photobox -f`
+- **Upload-Logs:** Siehe Server `uploads/upload_log.json`
+
+### Debug-Modus
+```bash
+# Flask im Debug-Modus starten
+export FLASK_DEBUG=1
+python app.py
+```
 
 ### Kamera-Probleme
 ```bash
@@ -139,37 +347,77 @@ gphoto2 --list-config
 - [ ] Overlay/Branding-System
 - [ ] Automatisches Drucken via CUPS
 - [ ] Server-Upload (HTTP POST)
-- [ ] Konfigurierbare Themes
-- [ ] Foto-Countdown mit Preview
-- [ ] Batch-Foto-Operationen
+## 🗺️ Roadmap
 
-### Technische TODOs:
-- [ ] Systemd Service erstellen
-- [ ] Nginx Reverse Proxy
-- [ ] SSL/HTTPS Konfiguration
-- [ ] Log-Rotation einrichten
-- [ ] Backup-System implementieren
+Siehe detaillierte Entwicklungs-Roadmap: [photobox_roadmap.md](photobox_roadmap.md)
 
-## 🐛 Bekannte Limitierungen
+### ✅ **Abgeschlossen:**
+- **Phase 1** - Grundfunktionen ✅
+- **Phase 2** - Overlays, Drucken, Upload ✅  
+- **Phase 3** - Kiosk & Deployment ✅
+- **Phase 4.1** - Erweiteter Countdown ✅
 
-### Phase 1:
-- Keine Authentifizierung (nur für lokale Nutzung)
-- Fotos werden nur lokal gespeichert
-- Kein automatisches Drucken
-- Kein Overlay/Branding
-- Kein Kiosk-Modus
+### 🔄 **Aktuell in Arbeit:**
+- **Phase 4.2** - QR-Code für Downloads
+- **Phase 4.3** - Mehrfachaufnahme/Collage
+- **Phase 4.4** - Layout & Filter-Auswahl
 
-### Hardware-Abhängigkeiten:
-- Benötigt gphoto2-kompatible Kamera
-- USB-Verbindung zur Kamera erforderlich
-- Mindestens 1GB RAM empfohlen
-- SD-Karte mit ausreichend Speicherplatz
+### 🎯 **Geplant:**
+- Multi-Language Support
+- Cloud-Integration (Google Drive, Dropbox)
+- Social Media Sharing
+- Event-Management System
+- Analytics & Statistiken
 
-## 📞 Support
+## � Beitragen
 
-Bei Problemen:
-1. Kamera-Verbindung prüfen (`gphoto2 --auto-detect`)
-2. Browser-Konsole auf Fehler überprüfen
+### Issues & Feature-Requests
+- [GitHub Issues](https://github.com/marion909/Fotobox/issues) für Bug-Reports
+- [Discussions](https://github.com/marion909/Fotobox/discussions) für Feature-Ideen
+
+### Development
+```bash
+# Fork des Repositories erstellen
+git clone https://github.com/YOUR-USERNAME/Fotobox.git
+cd Fotobox
+
+# Feature-Branch erstellen
+git checkout -b feature/new-awesome-feature
+
+# Änderungen committen
+git commit -m "Add awesome new feature"
+
+# Pull Request erstellen
+```
+
+## 📄 Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz - siehe [LICENSE](LICENSE) für Details.
+
+## 🙏 Acknowledgments
+
+- **gphoto2** - Kamera-Integration
+- **Flask** - Web-Framework
+- **Pillow** - Bildverarbeitung
+- **Canon** - Kamera-Kompatibilität
+- **Raspberry Pi Foundation** - Hardware-Plattform
+
+## 📊 Projekt-Status
+
+| Komponente | Status | Version | Tests |
+|------------|--------|---------|--------|
+| Core App | ✅ Stabil | 4.1.0 | ✅ Getestet |
+| Countdown | ✅ Vollständig | 4.1.0 | ✅ Getestet |
+| Server Upload | ✅ Produktiv | 4.0.0 | ✅ Getestet |
+| Kiosk Mode | ✅ Funktional | 3.0.0 | ✅ Getestet |
+| Print System | ✅ Funktional | 2.0.0 | ⚠️ Hardware-abhängig |
+| QR Codes | 🔄 In Entwicklung | 4.2.0 | ❌ Nicht verfügbar |
+
+---
+
+**📸 Happy Photo Booth Building! 🎉**
+
+Erstellt mit ❤️ für unvergessliche Events und Hochzeiten.
 3. Flask-Logs im Terminal beachten
 4. USB-Kabel und -Anschlüsse testen
 
