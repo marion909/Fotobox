@@ -249,10 +249,12 @@ Fotobox/
 │   ├── config.php         # Server-Konfiguration
 │   └── README.md          # Server-Dokumentation
 │
-└── scripts/               # Setup & Deployment
-    ├── install_complete.sh # Komplette Auto-Installation
-    ├── install_autostart.sh # Autostart-Service
-    └── setup_system.sh     # System-Vorbereitung
+├── scripts/               # Setup & Deployment
+│   ├── install_complete.sh # Komplette Auto-Installation
+│   ├── install_autostart.sh # Autostart-Service
+│   └── setup_system.sh     # System-Vorbereitung
+│
+└── fix_camera_usb.sh      # USB-Kamera Fix Script
 ```
 
 ## 🎯 API Endpoints
@@ -303,6 +305,57 @@ sudo killall gphoto2
 
 # Kamera neu verbinden und testen
 gphoto2 --auto-detect
+```
+
+**USB Device Busy Error ("Could not claim the USB device"):**
+
+**🚀 Automatische Lösung (empfohlen):**
+```bash
+# Automatisches Fix-Script ausführen
+chmod +x fix_camera_usb.sh
+./fix_camera_usb.sh
+```
+
+**📋 Manuelle Lösung:**
+```bash
+# 1. Schneller Fix (meist ausreichend)
+sudo killall gphoto2 gvfs-gphoto2-volume-monitor
+sudo systemctl stop gvfs-daemon
+# Kamera USB-Kabel ziehen, 10 Sek warten, neu verbinden
+gphoto2 --auto-detect
+
+# 2. Erweiterte Lösung bei hartnäckigen Problemen
+sudo pkill -f gphoto2
+sudo modprobe -r uvcvideo gspca_main
+# Kamera neu verbinden
+gphoto2 --auto-detect
+
+# 3. Permanente Lösung installieren
+echo 'ENV{ID_GPHOTO2}=="1", ENV{UDISKS_IGNORE}="1"' | sudo tee /etc/udev/rules.d/40-gphoto2-disable-gvfs.rules
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="04a9", ATTR{idProduct}=="*", MODE="0666", GROUP="plugdev"' | sudo tee -a /etc/udev/rules.d/40-gphoto2-disable-gvfs.rules
+sudo udevadm control --reload-rules
+
+# 4. GVFS vollständig deaktivieren (falls nötig)
+sudo systemctl disable gvfs-daemon
+sudo systemctl mask gvfs-daemon
+```
+
+**Canon EOS spezifische Fixes:**
+```bash
+# Canon EOS 1500D/2000D USB-Modus prüfen
+# Kamera-Menü: Einstellungen > Kommunikation > USB-Verbindung
+# Auf "PC-Verbindung" oder "PTP" stellen (NICHT "Mass Storage")
+
+# Kamera-Firmware aktualisieren falls möglich
+# Canon Website: Neueste Firmware für EOS 1500D herunterladen
+
+# USB-Port testen
+# Verschiedene USB-Ports am Raspberry Pi testen
+# USB 2.0 Ports oft stabiler als USB 3.0
+
+# Stromversorgung prüfen
+# Starkes USB-Netzteil (min. 3A) für Raspberry Pi verwenden
+# Kamera-Akku voll geladen
 ```
 
 **Port bereits belegt:**
@@ -362,15 +415,60 @@ python app.py
 ```
 
 ### Kamera-Probleme
+
+**Sofortlösung für "Could not claim USB device":**
 ```bash
-# USB-Geräte anzeigen
+# Schneller Fix (meist ausreichend)
+sudo killall gphoto2 gvfs-gphoto2-volume-monitor
+sudo systemctl stop gvfs-daemon
+# Kamera USB-Kabel ziehen und neu verbinden
+gphoto2 --auto-detect
+
+# Erweiterte Diagnose
+lsusb | grep Canon                    # Kamera-Erkennung prüfen
+ps aux | grep gphoto                  # Laufende Prozesse prüfen
+sudo lsof | grep gphoto               # Offene Dateien prüfen
+```
+
+**Vollständige Kamera-Diagnose:**
+```bash
+# 1. USB-Geräte anzeigen
 lsusb
 
-# gphoto2 Debugging
-gphoto2 --debug --auto-detect
+# 2. Detaillierte gphoto2 Diagnose
+env LANG=C gphoto2 --debug --debug-logfile=camera-debug.txt --auto-detect
+cat camera-debug.txt | grep -i error
 
-# Kamera-Konfiguration anzeigen
+# 3. Kamera-Konfiguration anzeigen (wenn verbunden)
 gphoto2 --list-config
+gphoto2 --get-config /main/settings/capturetarget
+gphoto2 --get-config /main/other/d402
+
+# 4. USB-Permissions prüfen
+ls -la /dev/bus/usb/*/
+groups $USER | grep -E "plugdev|dialout"
+
+# 5. Kernel-Module prüfen
+lsmod | grep -E "gspca|uvc|v4l2"
+dmesg | grep -i canon | tail -10
+```
+
+**Häufige Canon EOS Probleme:**
+```bash
+# Problem: Kamera schaltet sich ab
+# Lösung: Power-Saving in Kamera-Menü deaktivieren
+gphoto2 --set-config /main/settings/autopoweroff=0
+
+# Problem: Kamera im falschen Modus
+# Lösung: PTP-Modus erzwingen
+gphoto2 --set-config /main/settings/capturetarget=0  # Kamera-RAM
+# oder
+gphoto2 --set-config /main/settings/capturetarget=1  # SD-Karte
+
+# Problem: Langsame Aufnahme
+# Lösung: Bildqualität anpassen
+gphoto2 --set-config /main/imgsettings/imageformat=7  # JPEG Large Fine
+gphoto2 --set-config /main/imgsettings/iso=1         # Auto ISO
 ```
 
 ### App-Debugging
