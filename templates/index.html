@@ -156,26 +156,70 @@ function startPhotoCountdown(seconds = 3) {
         `;
         
         // Fallback falls Live Preview nicht verfügbar ist
+        let fallbackShown = false;
         previewImage.onerror = function() {
-            this.style.display = 'none';
-            const fallbackDiv = document.createElement('div');
-            fallbackDiv.style.cssText = `
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: linear-gradient(45deg, #333, #555);
-                color: white;
-                font-size: 2rem;
-                text-align: center;
-                border-radius: 10px;
-            `;
-            fallbackDiv.innerHTML = '📷<br>Kamera bereit<br><small style="font-size: 1rem;">Live-Vorschau nicht verfügbar</small>';
-            previewContainer.appendChild(fallbackDiv);
+            if (!fallbackShown) {
+                console.log('Preview-Bild konnte nicht geladen werden, zeige Fallback');
+                this.style.display = 'none';
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(45deg, #2C3E50, #34495E);
+                    color: white;
+                    font-size: 2rem;
+                    text-align: center;
+                    border-radius: 10px;
+                    position: relative;
+                `;
+                
+                const loadingSpinner = document.createElement('div');
+                loadingSpinner.style.cssText = `
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    width: 30px;
+                    height: 30px;
+                    border: 3px solid rgba(255,255,255,0.3);
+                    border-top: 3px solid white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                `;
+                
+                fallbackDiv.innerHTML = '📷<br>Kamera bereit<br><small style="font-size: 1rem;">Verbinde mit Live-Vorschau...</small>';
+                fallbackDiv.appendChild(loadingSpinner);
+                previewContainer.appendChild(fallbackDiv);
+                fallbackShown = true;
+                
+                // Versuche Preview nach kurzer Pause erneut zu laden
+                setTimeout(() => {
+                    const newImg = new Image();
+                    newImg.onload = function() {
+                        if (fallbackDiv.parentNode) {
+                            fallbackDiv.remove();
+                            previewImage.style.display = 'block';
+                            previewImage.src = this.src;
+                        }
+                    };
+                    newImg.src = '/api/preview_image?t=' + Date.now();
+                }, 1000);
+            }
         };
         
+        previewImage.onload = function() {
+            console.log('Preview-Bild erfolgreich geladen');
+            this.style.display = 'block';
+            // Entferne Fallback falls vorhanden
+            const fallback = previewContainer.querySelector('div:not(#live-preview-image):not([style*="position: absolute"])');
+            if (fallback) fallback.remove();
+        };
+        
+        // Ersten Ladeversuch starten
         previewImage.src = '/api/preview_image?t=' + Date.now();
+        console.log('Lade Preview-Bild:', previewImage.src);
         
         // Preview Overlay mit Countdown
         const previewOverlay = document.createElement('div');
@@ -277,6 +321,11 @@ function startPhotoCountdown(seconds = 3) {
             
             #countdown-overlay {
                 backdrop-filter: blur(5px);
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
         `;
         document.head.appendChild(style);
@@ -398,6 +447,7 @@ function printPhoto() {
 
 // Live Preview Funktionen
 function startLivePreview() {
+    console.log('Starte Live Preview...');
     fetch('/api/start_live_preview', {
         method: 'POST',
         headers: {
@@ -406,12 +456,18 @@ function startLivePreview() {
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
-            console.warn('Live Preview Warnung:', data.message);
+        console.log('Live Preview Response:', data);
+        if (data.success) {
+            console.log('✅ Live Preview aktiviert:', data.message);
+            if (data.demo_mode) {
+                console.log('🎬 Demo-Modus aktiv');
+            }
+        } else {
+            console.warn('⚠️ Live Preview Warnung:', data.message);
         }
     })
     .catch(error => {
-        console.error('Live Preview Fehler:', error);
+        console.error('❌ Live Preview Fehler:', error);
     });
 }
 

@@ -115,10 +115,19 @@ class OptimalCameraManager:
     
     def start_live_preview(self):
         """Startet Live-Vorschau der Kamera"""
-        if not GPHOTO2_AVAILABLE or not self.camera_detected:
+        if not GPHOTO2_AVAILABLE:
+            # Fallback für Demo/Test ohne gphoto2
+            print("🎬 Demo-Modus: Live-Vorschau simuliert (gphoto2 nicht verfügbar)")
+            return {
+                'success': True,
+                'message': 'Demo Live-Vorschau aktiviert',
+                'demo_mode': True
+            }
+        
+        if not self.camera_detected:
             return {
                 'success': False,
-                'message': 'Kamera nicht verfügbar'
+                'message': 'Kamera nicht verbunden'
             }
         
         try:
@@ -155,7 +164,11 @@ class OptimalCameraManager:
     
     def capture_preview_image(self):
         """Erfasst ein Preview-Bild für Live-Ansicht"""
-        if not GPHOTO2_AVAILABLE or not self.camera_detected:
+        if not GPHOTO2_AVAILABLE:
+            # Demo-Modus: Erstelle ein Platzhalter-Preview-Bild
+            return self._create_demo_preview_image()
+        
+        if not self.camera_detected:
             return None
         
         try:
@@ -171,6 +184,61 @@ class OptimalCameraManager:
             return preview_path
         except Exception as e:
             print(f"❌ Preview-Aufnahme Fehler: {e}")
+            return self._create_demo_preview_image()
+    
+    def _create_demo_preview_image(self):
+        """Erstellt ein Demo-Preview-Bild für Test/Demo-Zwecke"""
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            import io
+            
+            # Erstelle Demo-Bild (640x480)
+            img = Image.new('RGB', (640, 480), color='#2C3E50')
+            draw = ImageDraw.Draw(img)
+            
+            # Aktuelle Zeit für animierte Demo
+            current_time = datetime.datetime.now()
+            time_str = current_time.strftime("%H:%M:%S")
+            
+            # Zeichne Demo-Interface
+            draw.rectangle([50, 50, 590, 430], fill='#34495E', outline='#ECF0F1', width=3)
+            
+            # Titel
+            try:
+                # Versuche systemspezifische Schrift zu laden
+                font_large = ImageFont.truetype("arial.ttf", 36)
+                font_medium = ImageFont.truetype("arial.ttf", 24)
+                font_small = ImageFont.truetype("arial.ttf", 16)
+            except:
+                # Fallback zu Default-Font
+                font_large = ImageFont.load_default()
+                font_medium = ImageFont.load_default()
+                font_small = ImageFont.load_default()
+            
+            # Demo-Text
+            draw.text((320, 120), "📷 LIVE PREVIEW", font=font_large, anchor="mm", fill='#ECF0F1')
+            draw.text((320, 180), "Canon EOS Demo", font=font_medium, anchor="mm", fill='#BDC3C7')
+            draw.text((320, 220), f"Zeit: {time_str}", font=font_small, anchor="mm", fill='#95A5A6')
+            
+            # Animierte Elemente
+            seconds = current_time.second
+            for i in range(0, 360, 30):
+                if (i // 30) <= (seconds // 5):
+                    x = 320 + 80 * (i / 360) * 3.14159 
+                    y = 280 + 20 * ((i + seconds * 6) % 360 / 360)
+                    draw.circle([x, y], 3, fill='#3498DB')
+            
+            draw.text((320, 350), "Demo-Modus aktiv", font=font_medium, anchor="mm", fill='#E74C3C')
+            draw.text((320, 380), "Installieren Sie gphoto2 für echte Kamera", font=font_small, anchor="mm", fill='#95A5A6')
+            
+            # Speichere als Preview-Datei
+            preview_path = os.path.join(self.config.photo_dir, 'live_preview.jpg')
+            img.save(preview_path, 'JPEG', quality=85)
+            
+            return preview_path
+            
+        except Exception as e:
+            print(f"❌ Demo-Preview Fehler: {e}")
             return None
 
     def take_photo(self, filename=None, **kwargs):
