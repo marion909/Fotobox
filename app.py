@@ -333,6 +333,10 @@ def api_config():
                     'enabled': config.upload.enabled,
                     'auto_upload': config.upload.auto_upload,
                     'upload_method': config.upload.upload_method
+                },
+                'countdown': {
+                    'enabled': config.countdown_enabled,
+                    'duration': config.countdown_duration
                 }
             }
         })
@@ -357,6 +361,236 @@ def api_config():
                 'success': False,
                 'message': f'Konfigurationsfehler: {str(e)}'
             })
+
+# Phase 3: Kiosk & Deployment API-Endpunkte
+@app.route('/api/kiosk/toggle', methods=['POST'])
+def toggle_kiosk_mode():
+    """Kiosk-Modus ein/ausschalten"""
+    try:
+        data = request.get_json()
+        enabled = data.get('enabled', False)
+        
+        # Kiosk-Status in Konfiguration speichern
+        config.kiosk_mode = enabled
+        save_config()
+        
+        return jsonify({'success': True, 'kiosk_mode': enabled})
+        
+    except Exception as e:
+        print(f"Kiosk-Toggle-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/autostart/toggle', methods=['POST'])
+def toggle_autostart():
+    """Autostart ein/ausschalten"""
+    try:
+        data = request.get_json()
+        enabled = data.get('enabled', False)
+        
+        # Autostart-Status in Konfiguration speichern
+        config.autostart_enabled = enabled
+        save_config()
+        
+        return jsonify({'success': True, 'autostart_enabled': enabled})
+        
+    except Exception as e:
+        print(f"Autostart-Toggle-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/system/restart', methods=['POST'])
+def restart_system():
+    """System neustarten"""
+    try:
+        import subprocess
+        
+        # Neustart-Befehl ausführen (funktioniert nur auf Linux/Raspberry Pi)
+        subprocess.run(['sudo', 'reboot'], check=False)
+        
+        return jsonify({'success': True, 'message': 'System wird neugestartet...'})
+        
+    except Exception as e:
+        print(f"Neustart-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/system/shutdown', methods=['POST'])
+def shutdown_system():
+    """System herunterfahren"""
+    try:
+        import subprocess
+        
+        # Shutdown-Befehl ausführen (funktioniert nur auf Linux/Raspberry Pi)
+        subprocess.run(['sudo', 'shutdown', '-h', 'now'], check=False)
+        
+        return jsonify({'success': True, 'message': 'System wird heruntergefahren...'})
+        
+    except Exception as e:
+        print(f"Shutdown-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/backup/create', methods=['POST'])
+def create_backup():
+    """Backup erstellen"""
+    try:
+        import subprocess
+        import datetime
+        
+        # Backup-Script ausführen (nur auf Raspberry Pi verfügbar)
+        result = subprocess.run(['/home/pi/backup_photobox.sh'], 
+                              capture_output=True, text=True, check=False)
+        
+        if result.returncode == 0:
+            timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            return jsonify({
+                'success': True, 
+                'message': f'Backup erfolgreich erstellt: {timestamp}'
+            })
+        else:
+            return jsonify({
+                'success': False, 
+                'error': f'Backup-Fehler: {result.stderr}'
+            })
+        
+    except Exception as e:
+        print(f"Backup-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/config/export', methods=['GET'])
+def export_config():
+    """Konfiguration exportieren"""
+    try:
+        import datetime
+        
+        config_data = {
+            'overlay_enabled': config.overlay.enabled,
+            'overlay_text_enabled': config.overlay.text_enabled,
+            'overlay_text_content': config.overlay.text_content,
+            'printing_enabled': config.printing.enabled,
+            'printing_auto_print': config.printing.auto_print,
+            'upload_enabled': config.upload.enabled,
+            'upload_auto_upload': config.upload.auto_upload,
+            'upload_method': config.upload.upload_method,
+            'kiosk_mode': getattr(config, 'kiosk_mode', False),
+            'autostart_enabled': getattr(config, 'autostart_enabled', False),
+            'backup_enabled': getattr(config, 'backup_enabled', True),
+            'screen_timeout': getattr(config, 'screen_timeout', 10),
+            'export_timestamp': datetime.datetime.now().isoformat()
+        }
+        
+        return jsonify({
+            'success': True,
+            'config': config_data,
+            'filename': f'photobox_config_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        })
+        
+    except Exception as e:
+        print(f"Config-Export-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/config/import', methods=['POST'])
+def import_config():
+    """Konfiguration importieren"""
+    try:
+        data = request.get_json()
+        if not data or 'config' not in data:
+            return jsonify({'success': False, 'error': 'Ungültige Konfigurationsdaten'})
+        
+        config_data = data['config']
+        
+        # Konfiguration aktualisieren (nur sichere Werte)
+        safe_mapping = {
+            'overlay_enabled': 'overlay.enabled',
+            'overlay_text_enabled': 'overlay.text_enabled',
+            'overlay_text_content': 'overlay.text_content',
+            'printing_enabled': 'printing.enabled',
+            'printing_auto_print': 'printing.auto_print',
+            'upload_enabled': 'upload.enabled',
+            'upload_auto_upload': 'upload.auto_upload',
+            'upload_method': 'upload.upload_method',
+            'kiosk_mode': 'kiosk_mode',
+            'autostart_enabled': 'autostart_enabled',
+            'backup_enabled': 'backup_enabled',
+            'screen_timeout': 'screen_timeout'
+        }
+        
+        for key, config_path in safe_mapping.items():
+            if key in config_data:
+                set_setting(config_path, config_data[key])
+        
+        save_config()
+        
+        return jsonify({'success': True, 'message': 'Konfiguration importiert'})
+        
+    except Exception as e:
+        print(f"Config-Import-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/config/reset', methods=['POST'])
+def reset_config():
+    """Konfiguration auf Standardwerte zurücksetzen"""
+    try:
+        # Neue Standard-Konfiguration erstellen
+        global config
+        from config import create_default_config
+        config = create_default_config()
+        save_config()
+        
+        return jsonify({'success': True, 'message': 'Konfiguration zurückgesetzt'})
+        
+    except Exception as e:
+        print(f"Config-Reset-Fehler: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# Phase 4 API: Countdown-Einstellungen
+@app.route('/api/countdown', methods=['GET', 'POST'])
+def api_countdown():
+    """API für Countdown-Einstellungen"""
+    if request.method == 'GET':
+        return jsonify({
+            'success': True,
+            'countdown': {
+                'enabled': config.countdown_enabled,
+                'duration': config.countdown_duration
+            }
+        })
+    
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            
+            if 'enabled' in data:
+                config.countdown_enabled = bool(data['enabled'])
+                set_setting('countdown_enabled', config.countdown_enabled)
+                
+            if 'duration' in data:
+                duration = int(data['duration'])
+                if 1 <= duration <= 10:  # Sinnvolle Grenzen
+                    config.countdown_duration = duration
+                    set_setting('countdown_duration', config.countdown_duration)
+                else:
+                    return jsonify({'success': False, 'error': 'Countdown muss zwischen 1 und 10 Sekunden sein'})
+            
+            save_config()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Countdown-Einstellungen gespeichert',
+                'countdown': {
+                    'enabled': config.countdown_enabled,
+                    'duration': config.countdown_duration
+                }
+            })
+            
+        except Exception as e:
+            print(f"Countdown-Config-Fehler: {e}")
+            return jsonify({'success': False, 'error': str(e)})
+
+# Phase 4: Route für erweiterte Features
+@app.route('/features')
+def features():
+    """Erweiterte Features - Phase 4"""
+    return render_template('features.html',
+                         countdown_enabled=config.countdown_enabled,
+                         countdown_duration=config.countdown_duration)
 
 # Hilfsfunktionen für Templates
 @app.template_filter('datetime')

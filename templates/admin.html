@@ -174,13 +174,80 @@
             </div>
         </div>
         
-        <!-- Phase 3 Vorbereitung -->
+        <!-- Phase 3: Kiosk & Deployment -->
         <div class="feature-section">
-            <h3>🖥️ Kiosk-Modus</h3>
+            <h3>🖥️ Kiosk & Deployment</h3>
             <div class="feature-controls">
-                <div class="feature-card disabled">
-                    <p>Vollbild-Autostart</p>
-                    <span class="phase-badge">Phase 3</span>
+                <div class="feature-card">
+                    <h4>Kiosk-Modus</h4>
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="kiosk-enabled" onchange="toggleKioskMode()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Kiosk-Modus aktivieren</span>
+                        <small>Startet die App automatisch im Vollbild nach Neustart</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autostart-enabled" onchange="toggleAutostart()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Autostart aktivieren</span>
+                        <small>Startet den Photobox-Service automatisch beim Booten</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Bildschirm-Timeout (Minuten):</label>
+                        <input type="number" id="screen-timeout" min="0" max="60" value="10" 
+                               onchange="updateScreenTimeout()">
+                        <small>0 = Bildschirm nie ausschalten</small>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>Deployment & Backup</h4>
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="backup-enabled" onchange="toggleBackup()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Automatisches Backup</span>
+                        <small>Erstellt täglich um 2:00 Uhr ein Backup</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="createBackup()">
+                            💾 Backup jetzt erstellen
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportConfig()">
+                            📄 Konfiguration exportieren
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Konfiguration importieren:</label>
+                        <input type="file" id="config-import" accept=".json" onchange="importConfig(this)">
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>System-Steuerung</h4>
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="restartSystem()">
+                            🔄 System neustarten
+                        </button>
+                        <button class="btn btn-secondary" onclick="shutdownSystem()">
+                            ⏻ System herunterfahren
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-warning" onclick="resetToDefaults()">
+                            🔄 Auf Standardwerte zurücksetzen
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,6 +269,21 @@
         </div>
     </section>
     
+    <!-- Quick Access Features -->
+    <section class="admin-section">
+        <h2>🚀 Erweiterte Features</h2>
+        <div class="feature-grid">
+            <a href="{{ url_for('features') }}" class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <div class="feature-info">
+                    <h3>Countdown & Features</h3>
+                    <p>Erweiterte Funktionen konfigurieren</p>
+                </div>
+                <div class="feature-badge">Phase 4</div>
+            </a>
+        </div>
+    </section>
+
     <!-- Navigation -->
     <nav class="bottom-nav">
         <a href="{{ url_for('index') }}" class="nav-item">
@@ -215,6 +297,10 @@
         <a href="{{ url_for('admin') }}" class="nav-item active">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text">Einstellungen</span>
+        </a>
+        <a href="{{ url_for('features') }}" class="nav-item">
+            <span class="nav-icon">🚀</span>
+            <span class="nav-text">Features</span>
         </a>
     </nav>
 </div>
@@ -485,10 +571,363 @@ function loadCurrentConfig() {
         });
 }
 
+// Phase 3: Kiosk & Deployment Funktionen
+function toggleKioskMode() {
+    const enabled = document.getElementById('kiosk-enabled').checked;
+    
+    fetch('/api/kiosk/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: enabled })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(enabled ? '✓ Kiosk-Modus aktiviert' : '✓ Kiosk-Modus deaktiviert', 'success');
+        } else {
+            showNotification('✗ Fehler beim Umschalten: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler: ' + error.message, 'error');
+    });
+}
+
+function toggleAutostart() {
+    const enabled = document.getElementById('autostart-enabled').checked;
+    
+    fetch('/api/autostart/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: enabled })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(enabled ? '✓ Autostart aktiviert' : '✓ Autostart deaktiviert', 'success');
+        } else {
+            showNotification('✗ Fehler beim Umschalten: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler: ' + error.message, 'error');
+    });
+}
+
+function updateScreenTimeout() {
+    const timeout = document.getElementById('screen-timeout').value;
+    updateConfig('screen_timeout', parseInt(timeout));
+    showNotification('✓ Bildschirm-Timeout aktualisiert', 'success');
+}
+
+function toggleBackup() {
+    const enabled = document.getElementById('backup-enabled').checked;
+    updateConfig('backup_enabled', enabled);
+    showNotification(enabled ? '✓ Automatisches Backup aktiviert' : '✓ Automatisches Backup deaktiviert', 'success');
+}
+
+function restartSystem() {
+    if (confirm('System wirklich neustarten? Dies beendet alle laufenden Prozesse.')) {
+        showLoading();
+        
+        fetch('/api/system/restart', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✓ System wird neugestartet...', 'success');
+                // Nach 3 Sekunden Seite neu laden (falls Neustart fehlschlägt)
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } else {
+                hideLoading();
+                showNotification('✗ Neustart fehlgeschlagen: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Fehler beim Neustart: ' + error.message, 'error');
+        });
+    }
+}
+
+function shutdownSystem() {
+    if (confirm('System wirklich herunterfahren? Die Photobox wird komplett ausgeschaltet.')) {
+        showLoading();
+        
+        fetch('/api/system/shutdown', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✓ System wird heruntergefahren...', 'success');
+            } else {
+                hideLoading();
+                showNotification('✗ Herunterfahren fehlgeschlagen: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Fehler beim Herunterfahren: ' + error.message, 'error');
+        });
+    }
+}
+
+function createBackup() {
+    showLoading();
+    
+    fetch('/api/backup/create', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('✓ ' + data.message, 'success');
+        } else {
+            showNotification('✗ Backup fehlgeschlagen: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Fehler beim Backup: ' + error.message, 'error');
+    });
+}
+
+function exportConfig() {
+    fetch('/api/config/export')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Download der Konfigurationsdatei
+            const blob = new Blob([JSON.stringify(data.config, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = data.filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showNotification('✓ Konfiguration exportiert', 'success');
+        } else {
+            showNotification('✗ Export fehlgeschlagen: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler beim Export: ' + error.message, 'error');
+    });
+}
+
+function importConfig(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const config = JSON.parse(e.target.result);
+                
+                fetch('/api/config/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ config: config })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('✓ Konfiguration importiert', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showNotification('✗ Import fehlgeschlagen: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Fehler beim Import: ' + error.message, 'error');
+                });
+                
+            } catch (error) {
+                showNotification('✗ Ungültige Konfigurationsdatei', 'error');
+            }
+        };
+        reader.readAsText(file);
+    }
+}
+
+function resetToDefaults() {
+    if (confirm('Wirklich alle Einstellungen auf Standardwerte zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+        fetch('/api/config/reset', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('✓ Konfiguration zurückgesetzt', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification('✗ Reset fehlgeschlagen: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Fehler beim Reset: ' + error.message, 'error');
+        });
+    }
+}
+
 // Speicher Info beim Laden aktualisieren
 document.addEventListener('DOMContentLoaded', function() {
     checkStorage();
     loadCurrentConfig();
 });
 </script>
+
+<style>
+/* Phase 4 Feature Grid Styles */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.feature-grid .feature-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-grid .feature-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #007bff;
+}
+
+.feature-grid .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #007bff, #00d4ff);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-grid .feature-card:hover::before {
+    opacity: 1;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #007bff, #00d4ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    flex-shrink: 0;
+}
+
+.feature-info {
+    flex: 1;
+}
+
+.feature-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.feature-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.feature-grid .feature-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-grid .feature-card {
+        padding: 1rem;
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+    }
+    
+    .feature-info h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Navigation Update für 4 Items */
+.bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    text-decoration: none;
+    color: #6c757d;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.bottom-nav .nav-item.active,
+.bottom-nav .nav-item:hover {
+    color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.bottom-nav .nav-icon {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 480px) {
+    .bottom-nav .nav-text {
+        font-size: 0.7rem;
+    }
+    
+    .bottom-nav .nav-icon {
+        font-size: 1rem;
+    }
+}
+</style>
 {% endblock %}

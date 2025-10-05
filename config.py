@@ -120,6 +120,15 @@ class AppConfig:
     upload: UploadConfig = None
     theme: ThemeConfig = None
     
+    # Phase 3: Kiosk & Deployment
+    kiosk_mode: bool = False
+    autostart_enabled: bool = False
+    screen_timeout: int = 10  # Minuten, 0 = nie ausschalten
+    backup_enabled: bool = True
+    backup_retention_days: int = 7
+    auto_update: bool = False
+    maintenance_mode: bool = False
+    
     def __post_init__(self):
         if self.overlay is None:
             self.overlay = OverlayConfig()

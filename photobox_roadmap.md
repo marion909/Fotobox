@@ -36,17 +36,27 @@ Entwicklung einer anpassbaren Fotobox-Anwendung für Raspberry Pi mit Canon EOS 
 - [x] Upload auf Server (HTTP/SFTP) ✅
 - [x] Konfigurierbare Themes ✅
 
-### Phase 3 – Kiosk & Deployment
-- [ ] Autostart-Service (systemd)
-- [ ] Chromium im Vollbild-Kioskmodus starten
-- [ ] Lokale Speicherung und Backup-Optionen
-- [ ] Admin-Menü für Konfiguration (z. B. API-Key, Design)
+### Phase 3 – Kiosk & Deployment ✅ ABGESCHLOSSEN
+- [x] Autostart-Service (systemd) ✅
+- [x] Chromium im Vollbild-Kioskmodus starten ✅
+- [x] Lokale Speicherung und Backup-Optionen ✅
+- [x] Admin-Menü für Konfiguration (API-Key, Design, System) ✅
+- [x] Komplettes System-Setup Script für Raspberry Pi ✅
+- [x] Hardware-Test und Monitoring-Tools ✅
+- [x] Server-Upload PHP-System mit Web-Galerie ✅
 
-### Phase 4 – Erweiterte Features (optional)
-- [ ] Countdown mit Live-Preview
-- [ ] QR-Code für Downloadlink
-- [ ] Mehrfachaufnahme / Collage / GIF-Modus
-- [ ] Nutzerwahl von Layouts & Filtern
+### Phase 4 – Erweiterte Features 🔄 IN ARBEIT
+- [x] **4.1 Countdown mit Live-Preview** ✅ ABGESCHLOSSEN
+  - [x] Konfigurierbarer Countdown (1-10 Sekunden)
+  - [x] Animierte Full-Screen Countdown-Anzeige
+  - [x] Responsive Design mit Farbwechsel
+  - [x] Verschiedene Nachrichten je Countdown-Stufe
+  - [x] ESC zum Abbrechen, Flash-Effekt beim Auslösen
+  - [x] Admin-Interface für Countdown-Einstellungen
+  - [x] API für Countdown-Konfiguration
+- [ ] **4.2 QR-Code für Downloadlink** 🔄 NÄCHSTES FEATURE
+- [ ] **4.3 Mehrfachaufnahme / Collage / GIF-Modus**
+- [ ] **4.4 Nutzerwahl von Layouts & Filtern**
 
 ---
 

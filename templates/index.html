@@ -94,10 +94,139 @@
 
 {% block scripts %}
 <script>
-// Foto aufnehmen
+// Foto aufnehmen mit Countdown (Phase 4)
 document.getElementById('takePhotoBtn').addEventListener('click', function() {
     if (this.disabled) return;
     
+    // Starte Countdown-Animation
+    startPhotoCountdown(3).then(() => {
+        // Nach Countdown: Foto aufnehmen
+        takePhotoNow();
+    });
+});
+
+// Phase 4: Erweiteter Countdown mit Live-Preview
+function startPhotoCountdown(seconds = 3) {
+    return new Promise((resolve) => {
+        let count = seconds;
+        
+        // Erstelle Countdown-Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'countdown-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        // Countdown-Text
+        const countdownText = document.createElement('div');
+        countdownText.style.cssText = `
+            font-size: 8rem;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            animation: pulse 1s infinite;
+            margin-bottom: 2rem;
+        `;
+        
+        // Hilfstext
+        const helpText = document.createElement('div');
+        helpText.style.cssText = `
+            font-size: 2rem;
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 1rem;
+        `;
+        helpText.innerHTML = '📸 Bereit machen für das Foto!';
+        
+        // Progress Ring (optional)
+        const progressRing = document.createElement('div');
+        progressRing.style.cssText = `
+            width: 200px;
+            height: 200px;
+            border: 8px solid rgba(255,255,255,0.3);
+            border-top: 8px solid white;
+            border-radius: 50%;
+            animation: countdown-rotate ${seconds}s linear;
+            margin-top: 2rem;
+        `;
+        
+        overlay.appendChild(countdownText);
+        overlay.appendChild(helpText);
+        overlay.appendChild(progressRing);
+        document.body.appendChild(overlay);
+        
+        // CSS Animationen hinzufügen
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            
+            @keyframes countdown-rotate {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            @keyframes flash {
+                0%, 100% { background: rgba(255,255,255,0.1); }
+                50% { background: rgba(255,255,255,0.9); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Countdown-Logic
+        const interval = setInterval(() => {
+            if (count > 0) {
+                countdownText.textContent = count;
+                
+                // Verschiedene Farben für Countdown
+                if (count === 3) {
+                    countdownText.style.color = '#4CAF50'; // Grün
+                    helpText.innerHTML = '📸 Bereit machen für das Foto!';
+                } else if (count === 2) {
+                    countdownText.style.color = '#FF9800'; // Orange
+                    helpText.innerHTML = '😊 Lächeln nicht vergessen!';
+                } else if (count === 1) {
+                    countdownText.style.color = '#F44336'; // Rot
+                    helpText.innerHTML = '📷 Gleich geht\'s los!';
+                }
+                
+                count--;
+            } else {
+                // Blitz-Effekt
+                countdownText.textContent = '📸';
+                countdownText.style.color = '#FFF';
+                countdownText.style.fontSize = '10rem';
+                helpText.innerHTML = '✨ KLICK! ✨';
+                
+                overlay.style.animation = 'flash 0.3s ease-in-out';
+                
+                clearInterval(interval);
+                setTimeout(() => {
+                    overlay.remove();
+                    style.remove();
+                    resolve();
+                }, 800);
+            }
+        }, 1000);
+    });
+}
+
+// Foto-Aufnahme nach Countdown
+function takePhotoNow() {
     showLoading();
     
     fetch('/api/take_photo', {
@@ -126,7 +255,7 @@ document.getElementById('takePhotoBtn').addEventListener('click', function() {
         hideLoading();
         showNotification('❌ Verbindungsfehler: ' + error.message, 'error');
     });
-});
+}
 
 // Foto Modal
 function showPhotoModal(url, filename) {

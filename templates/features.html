@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Erweiterte Features - Photobox{% endblock %}
+
+{% block content %}
+<div class="features-container">
+    <header class="header">
+        <h1>🚀 Erweiterte Features</h1>
+        <nav class="breadcrumb">
+            <a href="/">🏠 Home</a> &gt; 
+            <a href="/admin">⚙️ Admin</a> &gt; 
+            <span>🚀 Features</span>
+        </nav>
+    </header>
+
+    <main class="features-main">
+        <!-- Phase 4.1: Countdown Einstellungen -->
+        <section class="feature-section">
+            <div class="feature-header">
+                <h2>⏱️ Foto-Countdown</h2>
+                <span class="feature-badge">Phase 4.1</span>
+            </div>
+            
+            <div class="feature-content">
+                <p class="feature-description">
+                    Konfiguriere den Countdown vor der Foto-Aufnahme für bessere Vorbereitung der Personen.
+                </p>
+                
+                <div class="setting-group">
+                    <div class="setting-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="countdown-enabled" {% if countdown_enabled %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <h3>Countdown aktivieren</h3>
+                            <p>Zeigt einen animierten Countdown vor der Foto-Aufnahme</p>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="number-input">
+                            <label for="countdown-duration">Countdown-Dauer:</label>
+                            <input type="range" id="countdown-duration" 
+                                   min="1" max="10" value="{{ countdown_duration }}" 
+                                   class="range-input">
+                            <span id="countdown-value">{{ countdown_duration }}</span> Sekunden
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-actions">
+                    <button class="btn btn-primary" onclick="saveCountdownSettings()">
+                        💾 Einstellungen speichern
+                    </button>
+                    <button class="btn btn-secondary" onclick="testCountdown()">
+                        ▶️ Countdown testen
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 4.2: QR-Code Feature (Vorbereitung) -->
+        <section class="feature-section">
+            <div class="feature-header">
+                <h2>📱 QR-Code Generator</h2>
+                <span class="feature-badge coming-soon">Phase 4.2</span>
+            </div>
+            
+            <div class="feature-content">
+                <p class="feature-description">
+                    Generiere QR-Codes für einfaches Herunterladen der aufgenommenen Fotos.
+                </p>
+                
+                <div class="setting-group disabled">
+                    <div class="setting-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <h3>QR-Code nach Foto anzeigen</h3>
+                            <p>Zeigt einen QR-Code zum direkten Download des Fotos</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-actions">
+                    <button class="btn btn-secondary" disabled>
+                        🔜 In Entwicklung
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 4.3: Multi-Shot Feature (Vorbereitung) -->
+        <section class="feature-section">
+            <div class="feature-header">
+                <h2>📷 Mehrfachaufnahme</h2>
+                <span class="feature-badge coming-soon">Phase 4.3</span>
+            </div>
+            
+            <div class="feature-content">
+                <p class="feature-description">
+                    Aktiviere Collage-Modus, Serienaufnahmen oder GIF-Erstellung.
+                </p>
+                
+                <div class="setting-group disabled">
+                    <div class="setting-item">
+                        <label class="toggle-switch">
+                            <input type="checkbox" disabled>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="setting-info">
+                            <h3>Collage-Modus</h3>
+                            <p>Nimmt mehrere Fotos auf und erstellt eine Collage</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-actions">
+                    <button class="btn btn-secondary" disabled>
+                        🔜 In Entwicklung
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Status Overview -->
+        <section class="feature-status">
+            <h2>📊 Feature Status</h2>
+            <div class="status-grid">
+                <div class="status-card completed">
+                    <div class="status-icon">✅</div>
+                    <h3>Foto-Countdown</h3>
+                    <p>Vollständig implementiert</p>
+                </div>
+                <div class="status-card in-progress">
+                    <div class="status-icon">🔄</div>
+                    <h3>QR-Code Generator</h3>
+                    <p>In Entwicklung</p>
+                </div>
+                <div class="status-card planned">
+                    <div class="status-icon">📋</div>
+                    <h3>Mehrfachaufnahme</h3>
+                    <p>Geplant</p>
+                </div>
+                <div class="status-card planned">
+                    <div class="status-icon">🎨</div>
+                    <h3>Layout & Filter</h3>
+                    <p>Geplant</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Countdown Test Modal -->
+<div id="testModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>🧪 Countdown-Test</h3>
+        <p>Der Countdown wird jetzt getestet...</p>
+        <button onclick="closeTestModal()" class="btn btn-secondary">Schließen</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include countdown functionality -->
+<script src="{{ url_for('static', filename='js/countdown.js') }}"></script>
+
+<script>
+// Features page specific JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    setupCountdownSettings();
+});
+
+function setupCountdownSettings() {
+    const durationRange = document.getElementById('countdown-duration');
+    const durationValue = document.getElementById('countdown-value');
+    
+    // Update display when range changes
+    durationRange.addEventListener('input', function() {
+        durationValue.textContent = this.value;
+    });
+}
+
+async function saveCountdownSettings() {
+    const enabled = document.getElementById('countdown-enabled').checked;
+    const duration = parseInt(document.getElementById('countdown-duration').value);
+    
+    showLoading();
+    
+    const success = await saveCountdownSettings(enabled, duration);
+    
+    hideLoading();
+    
+    if (success) {
+        // Update UI feedback
+        updateFeatureStatus('countdown', 'saved');
+    }
+}
+
+async function testCountdown() {
+    const duration = parseInt(document.getElementById('countdown-duration').value);
+    
+    showNotification('🧪 Starte Countdown-Test...', 'info');
+    
+    try {
+        await startAdvancedCountdown(duration);
+        showNotification('✅ Countdown-Test erfolgreich!', 'success');
+    } catch (error) {
+        showNotification('❌ Countdown-Test fehlgeschlagen', 'error');
+    }
+}
+
+function updateFeatureStatus(feature, status) {
+    // Visual feedback for saved settings
+    const section = document.querySelector(`[data-feature="${feature}"]`);
+    if (section) {
+        section.classList.add('feature-saved');
+        setTimeout(() => {
+            section.classList.remove('feature-saved');
+        }, 2000);
+    }
+}
+
+function closeTestModal() {
+    document.getElementById('testModal').style.display = 'none';
+}
+</script>
+
+<style>
+/* Features Page Styles */
+.features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.features-main {
+    display: grid;
+    gap: 2rem;
+}
+
+.feature-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.feature-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+.feature-section.feature-saved {
+    border-color: #4CAF50;
+    background: linear-gradient(to right, #f8fff8, white);
+}
+
+.feature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 1rem;
+}
+
+.feature-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    background: #007bff;
+    color: white;
+}
+
+.feature-badge.coming-soon {
+    background: #6c757d;
+}
+
+.feature-content {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.feature-description {
+    color: #666;
+    line-height: 1.6;
+}
+
+.setting-group {
+    display: grid;
+    gap: 1rem;
+}
+
+.setting-group.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-switch input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 30px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #007bff;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(30px);
+}
+
+.setting-info h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+}
+
+.setting-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.number-input {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.range-input {
+    flex: 1;
+    max-width: 200px;
+}
+
+.feature-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.feature-status {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.status-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 4px solid #ddd;
+}
+
+.status-card.completed {
+    border-left-color: #28a745;
+}
+
+.status-card.in-progress {
+    border-left-color: #ffc107;
+}
+
+.status-card.planned {
+    border-left-color: #6c757d;
+}
+
+.status-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-card h3 {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.status-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .features-container {
+        padding: 1rem;
+    }
+    
+    .feature-section {
+        padding: 1rem;
+    }
+    
+    .feature-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .feature-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

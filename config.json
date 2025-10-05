@@ -40,11 +40,11 @@
     "margin_right": 0
   },
   "upload": {
-    "enabled": false,
+    "enabled": true,
     "auto_upload": false,
     "upload_method": "http",
-    "http_endpoint": "",
-    "http_api_key": "",
+    "http_endpoint": "https://upload.neuhauser.cloud/upload.php",
+    "http_api_key": "GKU52R0RP4EwMnmJg00d52wgW5iEzSV3J3Hv4WBMA0dL8aS0vS",
     "http_timeout": 30,
     "sftp_host": "",
     "sftp_port": 22,
@@ -68,5 +68,12 @@
     "font_size_base": "16px",
     "border_radius": "12px",
     "shadow_level": "normal"
-  }
+  },
+  "kiosk_mode": false,
+  "autostart_enabled": false,
+  "screen_timeout": 10,
+  "backup_enabled": true,
+  "backup_retention_days": 7,
+  "auto_update": false,
+  "maintenance_mode": false
 }

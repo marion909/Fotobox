@@ -206,38 +206,156 @@ function updateCameraStatusUI(connected) {
     }
 }
 
-// Countdown für Foto (Phase 2 Vorbereitung)
+// Phase 4: Erweiteter Countdown für Foto mit Live-Preview
 function startCountdown(seconds = 3) {
     return new Promise((resolve) => {
         let count = seconds;
         
-        const countdownElement = document.createElement('div');
-        countdownElement.style.cssText = `
+        // Erstelle Full-Screen Countdown-Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'photo-countdown';
+        overlay.style.cssText = `
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 8rem;
-            font-weight: bold;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             color: white;
-            z-index: 5000;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         `;
-        document.body.appendChild(countdownElement);
         
+        // Hauptzähler
+        const countdownNumber = document.createElement('div');
+        countdownNumber.style.cssText = `
+            font-size: 12rem;
+            font-weight: 900;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+            margin: 2rem;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        `;
+        
+        // Status-Text
+        const statusText = document.createElement('div');
+        statusText.style.cssText = `
+            font-size: 3rem;
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        `;
+        
+        // Circular Progress Indicator
+        const progressContainer = document.createElement('div');
+        progressContainer.style.cssText = `
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 2rem;
+        `;
+        
+        const progressSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        progressSvg.setAttribute('width', '300');
+        progressSvg.setAttribute('height', '300');
+        progressSvg.style.cssText = `
+            transform: rotate(-90deg);
+            position: absolute;
+            top: 0;
+            left: 0;
+        `;
+        
+        const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        progressCircle.setAttribute('cx', '150');
+        progressCircle.setAttribute('cy', '150');
+        progressCircle.setAttribute('r', '140');
+        progressCircle.setAttribute('stroke', 'white');
+        progressCircle.setAttribute('stroke-width', '8');
+        progressCircle.setAttribute('fill', 'transparent');
+        progressCircle.setAttribute('stroke-dasharray', '879.6'); // 2 * π * r
+        progressCircle.setAttribute('stroke-dashoffset', '879.6');
+        progressCircle.style.cssText = `
+            transition: stroke-dashoffset 1s linear;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+        `;
+        
+        progressSvg.appendChild(progressCircle);
+        progressContainer.appendChild(progressSvg);
+        
+        overlay.appendChild(statusText);
+        overlay.appendChild(countdownNumber);
+        overlay.appendChild(progressContainer);
+        document.body.appendChild(overlay);
+        
+        // Animationen und Countdown-Logic
         const interval = setInterval(() => {
             if (count > 0) {
-                countdownElement.textContent = count;
+                // Update Zahlen
+                countdownNumber.textContent = count;
+                
+                // Update Progress Ring
+                const progress = (seconds - count) / seconds;
+                const offset = 879.6 * (1 - progress);
+                progressCircle.style.strokeDashoffset = offset;
+                
+                // Farbschema je nach Countdown
+                if (count === 3) {
+                    countdownNumber.style.color = '#4CAF50';
+                    progressCircle.setAttribute('stroke', '#4CAF50');
+                    statusText.innerHTML = '📸 Bereit machen für das Foto!';
+                    overlay.style.background = 'linear-gradient(135deg, rgba(76,175,80,0.3) 0%, rgba(0,0,0,0.8) 100%)';
+                } else if (count === 2) {
+                    countdownNumber.style.color = '#FF9800';
+                    progressCircle.setAttribute('stroke', '#FF9800');
+                    statusText.innerHTML = '😊 Lächeln nicht vergessen!';
+                    overlay.style.background = 'linear-gradient(135deg, rgba(255,152,0,0.3) 0%, rgba(0,0,0,0.8) 100%)';
+                } else if (count === 1) {
+                    countdownNumber.style.color = '#F44336';
+                    progressCircle.setAttribute('stroke', '#F44336');
+                    statusText.innerHTML = '� Gleich geht\'s los!';
+                    overlay.style.background = 'linear-gradient(135deg, rgba(244,67,54,0.3) 0%, rgba(0,0,0,0.8) 100%)';
+                }
+                
+                // Scale-Animation
+                countdownNumber.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    countdownNumber.style.transform = 'scale(1)';
+                }, 200);
+                
                 count--;
             } else {
-                countdownElement.textContent = '📸';
+                // Blitz-Effekt
+                countdownNumber.textContent = '📸';
+                countdownNumber.style.color = '#FFF';
+                countdownNumber.style.fontSize = '15rem';
+                countdownNumber.style.transform = 'scale(1.3)';
+                statusText.innerHTML = '✨ KLICK! ✨';
+                
+                // Vollbild-Blitz
+                overlay.style.background = 'white';
+                
                 clearInterval(interval);
                 setTimeout(() => {
-                    countdownElement.remove();
+                    overlay.remove();
                     resolve();
-                }, 500);
+                }, 800);
             }
         }, 1000);
+        
+        // Abbrechen mit ESC
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                clearInterval(interval);
+                overlay.remove();
+                document.removeEventListener('keydown', escHandler);
+                resolve();
+            }
+        };
+        document.addEventListener('keydown', escHandler);
     });
 }
 
