@@ -433,6 +433,35 @@ sudo systemctl restart photobox
 
 📋 **Detaillierte Anleitung:** [Frontend Troubleshooting Guide](docs/troubleshooting-frontend.md)
 
+### 📷 Kamera zeigt an, aber Foto-Aufnahme schlägt fehl
+
+**Canon EOS "Could not claim device" Problem:**
+```bash
+# Automatische Kamera-Diagnose und Fix:
+curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/diagnose_camera.sh | sudo bash
+```
+
+**Schnelle manuelle Lösung:**
+```bash
+# Störende Prozesse beenden:
+sudo killall gphoto2 gvfs-gphoto2-volume-monitor
+sudo systemctl stop gvfs-daemon
+
+# USB zurücksetzen:
+sudo modprobe -r uvcvideo && sleep 2 && sudo modprobe uvcvideo
+
+# Test:
+gphoto2 --capture-image
+```
+
+**Kritische Kamera-Einstellungen (an der Kamera einstellen):**
+- USB-Modus: **"PC Connect"** oder **"PTP"** (NICHT Mass Storage)
+- Auto Power Off: **Deaktivieren** oder 30min
+- Shooting Mode: **Manual (M)** oder **Av**
+- Image Quality: **JPEG Large Fine**
+
+📋 **Detaillierte Anleitung:** [Canon EOS Troubleshooting Guide](docs/canon-eos-troubleshooting.md)
+
 ### Häufige Probleme
 
 **Kamera nicht erkannt:**
