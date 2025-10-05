@@ -207,16 +207,75 @@ print_step "Photobox Anwendung"
 # Prüfe ob bereits installiert
 if [ -d "$INSTALL_DIR" ]; then
     print_warning "Photobox bereits in $INSTALL_DIR installiert"
-    read -p "Neu installieren? Dies löscht alle lokalen Änderungen! (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        print_status "Entferne alte Installation..."
-        rm -rf "$INSTALL_DIR"
-    else
-        print_status "Aktualisiere bestehende Installation..."
+    
+    # Prüfe ob es eine Git-Installation ist
+    if [ -d "$INSTALL_DIR/.git" ]; then
         cd "$INSTALL_DIR"
-        sudo -u $SERVICE_USER git pull
-        goto_venv_setup
+        
+        # Prüfe auf lokale Änderungen
+        if ! sudo -u $SERVICE_USER git diff --quiet || ! sudo -u $SERVICE_USER git diff --cached --quiet; then
+            print_warning "Lokale Änderungen erkannt!"
+            echo ""
+            echo "Optionen:"
+            echo "1) Lokale Änderungen sichern und aktualisieren (empfohlen)"
+            echo "2) Lokale Änderungen überschreiben und aktualisieren"  
+            echo "3) Komplett neu installieren"
+            echo "4) Installation abbrechen"
+            echo ""
+            read -p "Wählen Sie eine Option (1-4): " -n 1 -r
+            echo
+            
+            case $REPLY in
+                1)
+                    print_status "Sichere lokale Änderungen..."
+                    BACKUP_BRANCH="local-backup-$(date +%Y%m%d-%H%M%S)"
+                    sudo -u $SERVICE_USER git checkout -b "$BACKUP_BRANCH"
+                    sudo -u $SERVICE_USER git add -A
+                    sudo -u $SERVICE_USER git commit -m "Backup vor Update $(date)" || true
+                    sudo -u $SERVICE_USER git checkout master
+                    sudo -u $SERVICE_USER git reset --hard origin/master
+                    sudo -u $SERVICE_USER git pull
+                    print_success "Änderungen in Branch '$BACKUP_BRANCH' gesichert"
+                    ;;
+                2)
+                    print_status "Überschreibe lokale Änderungen..."
+                    sudo -u $SERVICE_USER git reset --hard HEAD
+                    sudo -u $SERVICE_USER git clean -fd
+                    sudo -u $SERVICE_USER git pull
+                    ;;
+                3)
+                    print_status "Entferne alte Installation für Neuinstallation..."
+                    rm -rf "$INSTALL_DIR"
+                    ;;
+                4)
+                    print_status "Installation abgebrochen"
+                    exit 0
+                    ;;
+                *)
+                    print_error "Ungültige Option. Installation abgebrochen."
+                    exit 1
+                    ;;
+            esac
+        else
+            print_status "Keine lokalen Änderungen - aktualisiere..."
+            sudo -u $SERVICE_USER git pull
+        fi
+        
+        # Nach erfolgreichem Update: Springe zur venv-Setup
+        if [ -d "$INSTALL_DIR" ]; then
+            print_success "Repository erfolgreich aktualisiert"
+            goto_venv_setup
+        fi
+    else
+        print_warning "Kein Git-Repository gefunden in $INSTALL_DIR"
+        read -p "Verzeichnis löschen und neu installieren? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            rm -rf "$INSTALL_DIR"
+        else
+            print_error "Installation abgebrochen"
+            exit 1
+        fi
     fi
 fi
 

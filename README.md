@@ -164,9 +164,23 @@ sudo systemctl start photobox          # Service starten
 sudo systemctl restart photobox        # Service neustarten
 sudo journalctl -u photobox -f         # Live-Logs anzeigen
 
-# Problemlösung
+# Updates & Wartung
+sudo ./update_photobox.sh              # Sichere Update-Installation
 ./fix_camera_usb.sh                    # Kamera-USB-Probleme beheben
 sudo reboot                            # Bei Problemen: Neustart
+```
+
+### 🔄 **Updates für bestehende Installationen**
+```bash
+# Sichere Update-Installation (empfohlen):
+cd /home/pi/Fotobox
+sudo ./update_photobox.sh
+
+# Manuelle Git-Update (für Entwickler):
+git stash                              # Lokale Änderungen sichern
+git pull                               # Updates holen
+git stash pop                          # Änderungen wiederherstellen
+sudo systemctl restart photobox       # Service neustarten
 ```
 
 ## 🔧 Konfiguration
