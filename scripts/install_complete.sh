@@ -5,6 +5,35 @@
 
 set -e  # Exit bei Fehlern
 
+# Non-Interactive Mode für automatische Installation
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
+# Debconf-Konfigurationen für non-interactive Installation
+echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
+echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
+
+# Weitere debconf-Konfigurationen für automatische Installation
+echo "postfix postfix/mailname string raspberry" | debconf-set-selections
+echo "postfix postfix/main_mailer_type string 'No configuration'" | debconf-set-selections
+
+# CUPS-Konfiguration ohne Prompts
+echo "cupsys cupsys/raw-print boolean true" | debconf-set-selections
+echo "cupsys cupsys/backend note" | debconf-set-selections
+
+print_status "Non-Interactive Mode konfiguriert für automatische Installation"
+
+# APT-Konfiguration für non-interactive und robuste Installation
+cat > /etc/apt/apt.conf.d/99photobox-noninteractive << 'EOF'
+APT::Get::Assume-Yes "true";
+APT::Get::force-yes "true";
+DPkg::Options "--force-confdef";
+DPkg::Options "--force-confold";
+Dpkg::Use-Pty "0";
+EOF
+
+print_status "APT non-interactive Konfiguration gesetzt"
+
 # Konfiguration
 INSTALL_DIR="/home/pi/Photobox"
 SERVICE_USER="pi"
@@ -54,26 +83,32 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Raspberry Pi Check
+# Raspberry Pi Check (skip in non-interactive mode)
 if ! grep -q "Raspberry Pi" /proc/cpuinfo; then
     print_warning "Dieses Script ist für Raspberry Pi optimiert!"
-    read -p "Trotzdem fortfahren? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
+    
+    # Prüfe ob interaktiver Modus (Terminal verfügbar)
+    if [ -t 0 ] && [ -z "$DEBIAN_FRONTEND" ]; then
+        read -p "Trotzdem fortfahren? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    else
+        print_status "Non-interactive Modus - automatisches Fortfahren auf Non-Raspberry-Pi System"
     fi
 fi
 
 print_step "System-Update"
 print_status "Aktualisiere Paketlisten..."
-apt update
+apt update -q
 
-print_status "Installiere System-Updates..."
-apt upgrade -y
+print_status "Installiere System-Updates (non-interactive)..."
+apt upgrade -y -q
 
 print_step "Basis-Pakete Installation"
 print_status "Installiere Entwicklungstools..."
-apt install -y \
+apt install -y -q -q \
     build-essential \
     git \
     curl \
@@ -85,7 +120,7 @@ apt install -y \
     tmux
 
 print_status "Installiere Python und Entwicklungsumgebung..."
-apt install -y \
+apt install -y -q \
     python3 \
     python3-pip \
     python3-venv \
@@ -94,7 +129,7 @@ apt install -y \
 
 print_step "Kamera-Unterstützung"
 print_status "Installiere gphoto2 und Abhängigkeiten..."
-apt install -y \
+apt install -y -q \
     gphoto2 \
     libgphoto2-dev \
     libgphoto2-port12 \
@@ -124,7 +159,7 @@ print_step "Drucker-System (CUPS)"
 print_status "Installiere CUPS und Drucker-Treiber..."
 
 # Basis CUPS-Pakete installieren
-apt install -y \
+apt install -y -q \
     cups \
     cups-client \
     cups-bsd \
@@ -137,12 +172,12 @@ apt install -y \
 print_status "Versuche Canon-Treiber zu installieren..."
 if apt-cache show printer-driver-canon >/dev/null 2>&1; then
     print_status "Canon-Treiber gefunden - installiere..."
-    apt install -y printer-driver-canon
+    apt install -y -q printer-driver-canon
     print_success "Canon-Treiber erfolgreich installiert"
 else
     print_warning "Canon-Treiber nicht verfügbar - manuell installieren falls benötigt"
     print_status "Alternative: Gutenprint-Treiber installieren..."
-    apt install -y printer-driver-gutenprint || true
+    apt install -y -q printer-driver-gutenprint || true
 fi
 
 # CUPS für lokalen Zugriff konfigurieren
@@ -165,7 +200,7 @@ print_success "CUPS erfolgreich konfiguriert - Web-Interface: http://localhost:6
 
 print_step "Web-Browser für Kiosk-Modus"
 print_status "Installiere Chromium Browser..."
-apt install -y \
+apt install -y -q \
     chromium-browser \
     chromium-codecs-ffmpeg \
     unclutter \
@@ -174,7 +209,7 @@ apt install -y \
 
 print_step "Netzwerk & Hotspot"
 print_status "Installiere Netzwerk-Tools..."
-apt install -y \
+apt install -y -q \
     hostapd \
     dnsmasq \
     iptables-persistent \
@@ -182,7 +217,7 @@ apt install -y \
 
 print_step "Multimedia-Support"
 print_status "Installiere Bild- und Video-Bibliotheken..."
-apt install -y \
+apt install -y -q \
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
@@ -196,7 +231,7 @@ apt install -y \
 
 print_step "GPIO und Hardware-Support"
 print_status "Installiere Raspberry Pi spezifische Pakete..."
-apt install -y \
+apt install -y -q \
     python3-rpi.gpio \
     python3-gpiozero \
     raspi-gpio \
