@@ -534,19 +534,6 @@ systemctl daemon-reload
 systemctl enable photobox.service
 
 print_success "Photobox Service erstellt und aktiviert"
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=photobox
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable photobox.service
-}
-
-goto_venv_setup
 
 print_step "Kiosk-Modus Konfiguration"
 print_status "Erstelle Kiosk-Starter..."
