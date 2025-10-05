@@ -190,8 +190,11 @@ sudo systemctl restart photobox       # Service neustarten
 cd /home/pi/Fotobox
 sudo ./cleanup_photobox.sh
 
-# Oder direkt per curl:
+# Oder direkt per curl (automatischer Modus):
 curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/cleanup_photobox.sh | sudo bash
+
+# Manuelle Bestätigung bei lokaler Ausführung:
+sudo ./cleanup_photobox.sh --force
 
 # ⚠️ WARNUNG: Alle Fotos, Konfigurationen und Services werden entfernt!
 ```
