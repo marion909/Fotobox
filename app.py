@@ -145,7 +145,7 @@ class CameraController:
                         time.sleep(1)
                         # Versuche USB-Reset (falls Root-Rechte vorhanden)
                         try:
-                            subprocess.run(['./fix_camera_busy.sh', '--reset'], 
+                            subprocess.run(['scripts/fix_camera_busy.sh', '--reset'], 
                                          capture_output=True, timeout=10)
                         except:
                             pass  # Falls Script nicht verfügbar
@@ -153,7 +153,7 @@ class CameraController:
                     else:
                         return {
                             'success': False,
-                            'message': f'Canon EOS Device Busy Fehler - Versuche: ./fix_camera_busy.sh --reset'
+                            'message': f'Canon EOS Device Busy Fehler - Versuche: scripts/fix_camera_busy.sh --reset'
                         }
                 else:
                     print(f"❌ gphoto2 Fehler bei Versuch {attempt}: {e.stderr}")

@@ -3,7 +3,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://python.org)
 [![Flask](https://img.shields.io/badge/flask-2.3%2B-green)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Phase](https://img.shields.io/badge/phase-4.1-orange)](photobox_roadmap.md)
+[![Phase](https://img.shields.io/badge/phase-4.1%20Production-green)](photobox_roadmap.md)
+[![Version](https://img.shields.io/badge/version-4.1.0-blue)](VERSION)
 
 Eine vollständige, anpassbare Fotobox-Lösung für Raspberry Pi mit Canon EOS Kameras, Touch-Display, automatischem Drucken und Server-Upload.
 
@@ -37,7 +38,7 @@ Eine vollständige, anpassbare Fotobox-Lösung für Raspberry Pi mit Canon EOS K
 ### ⚡ **Sofort-Installation (Empfohlen)**
 ```bash
 # Ein Befehl für komplette Installation auf Raspberry Pi:
-curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/install_complete.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/install_complete.sh | sudo bash
 ```
 **Nach 10-15 Minuten:** Photobox läuft automatisch! 🎉
 
@@ -64,12 +65,12 @@ curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/install_co
 #### Option 1: 🚀 Automatische Voll-Installation (empfohlen)
 ```bash
 # Direkte Installation ohne Repository klonen:
-curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/install_complete.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/install_complete.sh | sudo bash
 
 # ODER lokale Installation:
 git clone https://github.com/marion909/Fotobox.git
 cd Fotobox
-sudo ./install_complete.sh
+sudo scripts/install_complete.sh
 ```
 **✅ Das war's! Nach Neustart läuft die Photobox vollautomatisch.**
 
@@ -165,11 +166,11 @@ sudo systemctl restart photobox        # Service neustarten
 sudo journalctl -u photobox -f         # Live-Logs anzeigen
 
 # Updates & Wartung
-sudo ./update_photobox.sh              # Sichere Update-Installation
-./fix_camera_usb.sh                    # Kamera-USB-Probleme beheben
-./fix_camera_busy.sh                   # Canon EOS Device-Busy-Probleme beheben
-./fix_camera_busy.sh --test 5          # Teste 5 aufeinanderfolgende Aufnahmen
-sudo ./cleanup_photobox.sh             # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
+sudo scripts/update_photobox.sh        # Sichere Update-Installation
+scripts/fix_camera_usb.sh              # Kamera-USB-Probleme beheben
+scripts/fix_camera_busy.sh             # Canon EOS Device-Busy-Probleme beheben
+scripts/fix_camera_busy.sh --test 5    # Teste 5 aufeinanderfolgende Aufnahmen
+sudo scripts/cleanup_photobox.sh       # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
 sudo reboot                            # Bei Problemen: Neustart
 ```
 
@@ -177,7 +178,7 @@ sudo reboot                            # Bei Problemen: Neustart
 ```bash
 # Sichere Update-Installation (empfohlen):
 cd /home/pi/Fotobox
-sudo ./update_photobox.sh
+sudo scripts/update_photobox.sh
 
 # Manuelle Git-Update (für Entwickler):
 git stash                              # Lokale Änderungen sichern
@@ -190,13 +191,13 @@ sudo systemctl restart photobox       # Service neustarten
 ```bash
 # Komplette Photobox-Entfernung (alle Daten werden gelöscht!):
 cd /home/pi/Fotobox
-sudo ./cleanup_photobox.sh
+sudo scripts/cleanup_photobox.sh
 
 # Oder direkt per curl (automatischer Modus):
-curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/cleanup_photobox.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/cleanup_photobox.sh | sudo bash
 
 # Manuelle Bestätigung bei lokaler Ausführung:
-sudo ./cleanup_photobox.sh --force
+sudo scripts/cleanup_photobox.sh --force
 
 # ⚠️ WARNUNG: Alle Fotos, Konfigurationen und Services werden entfernt!
 ```
@@ -216,8 +217,8 @@ gphoto2 --capture-image-and-download
 ### 🖨️ Drucker-Setup (optional)
 ```bash
 # Option 1: Automatisches Drucker-Setup
-chmod +x setup_printer.sh
-sudo ./setup_printer.sh
+chmod +x scripts/setup_printer.sh
+sudo scripts/setup_printer.sh
 
 # Option 2: Manuelle CUPS-Installation
 sudo apt update
@@ -283,8 +284,8 @@ Alle Einstellungen werden in `config.json` gespeichert:
 ### Autostart einrichten
 ```bash
 # Autostart-Service installieren
-chmod +x install_autostart.sh
-sudo ./install_autostart.sh
+chmod +x scripts/install_autostart.sh
+sudo scripts/install_autostart.sh
 
 # Service-Status prüfen
 sudo systemctl status photobox
@@ -358,14 +359,14 @@ Fotobox/
 │   ├── config.php         # Server-Konfiguration
 │   └── README.md          # Server-Dokumentation
 │
-├── scripts/               # Setup & Deployment
+├── scripts/               # Setup & Deployment-Scripts
 │   ├── install_complete.sh # Komplette Auto-Installation
 │   ├── install_autostart.sh # Autostart-Service
-│   └── setup_system.sh     # System-Vorbereitung
-│
-├── fix_camera_usb.sh      # USB-Kamera Fix Script
-├── update_photobox.sh     # Sichere Update-Installation
-└── cleanup_photobox.sh    # Vollständige Deinstallation
+│   ├── setup_printer.sh   # Drucker-Setup
+│   ├── fix_camera_usb.sh  # USB-Kamera Fix Script  
+│   ├── fix_camera_busy.sh # Canon Device-Busy Fix
+│   ├── update_photobox.sh # Sichere Update-Installation
+│   └── cleanup_photobox.sh # Vollständige Deinstallation
 ```
 
 ## 🎯 API Endpoints
@@ -423,8 +424,8 @@ gphoto2 --auto-detect
 **🚀 Automatische Lösung (empfohlen):**
 ```bash
 # Automatisches Fix-Script ausführen
-chmod +x fix_camera_usb.sh
-./fix_camera_usb.sh
+chmod +x scripts/fix_camera_usb.sh
+scripts/fix_camera_usb.sh
 ```
 
 **📋 Manuelle Lösung:**
@@ -474,17 +475,17 @@ sudo systemctl mask gvfs-daemon
 **🚀 Automatische Lösung (empfohlen):**
 ```bash
 # Spezielles Script für Device-Busy-Probleme
-chmod +x fix_camera_busy.sh
-./fix_camera_busy.sh
+chmod +x scripts/fix_camera_busy.sh
+scripts/fix_camera_busy.sh
 
 # Teste mehrere aufeinanderfolgende Aufnahmen
-./fix_camera_busy.sh --test 5
+scripts/fix_camera_busy.sh --test 5
 
 # Einzelne robuste Aufnahme
-./fix_camera_busy.sh --capture "test_%Y%m%d_%H%M%S.jpg"
+scripts/fix_camera_busy.sh --capture "test_%Y%m%d_%H%M%S.jpg"
 
 # Permanente Fixes installieren
-./fix_camera_busy.sh --install-fix
+scripts/fix_camera_busy.sh --install-fix
 ```
 
 **📋 Was ist das Device-Busy-Problem?**
@@ -501,7 +502,7 @@ sleep 2                              # Kurze Pause
 gphoto2 --capture-image-and-download # Erneut versuchen
 
 # 2. USB-Reset für hartnäckige Fälle
-./fix_camera_busy.sh --reset         # Vollständiger Kamera-Reset
+scripts/fix_camera_busy.sh --reset   # Vollständiger Kamera-Reset
 
 # 3. Optimierte Aufnahme-Serie
 for i in {1..5}; do
@@ -514,7 +515,7 @@ done
 **⚙️ Permanente Optimierungen:**
 ```bash
 # Installiere automatische Fixes
-./fix_camera_busy.sh --install-fix
+scripts/fix_camera_busy.sh --install-fix
 
 # Was wird installiert:
 # - Optimierte gphoto2-Konfiguration
