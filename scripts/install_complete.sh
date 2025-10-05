@@ -133,7 +133,8 @@ apt install -y -q \
     python3-pip \
     python3-venv \
     python3-dev \
-    python3-setuptools
+    python3-setuptools \
+    python3-distutils
 
 print_step "Kamera-Unterstützung"
 print_status "Installiere gphoto2 und Abhängigkeiten..."
@@ -382,12 +383,39 @@ print_status "Aktiviere Virtual Environment und installiere Pakete..."
 
 # Verwende absoluten Pfad für pip
 VENV_PIP="$INSTALL_DIR/.venv/bin/pip"
+VENV_PYTHON="$INSTALL_DIR/.venv/bin/python"
+
+# Prüfe ob pip im Virtual Environment vorhanden ist
 if [ ! -f "$VENV_PIP" ]; then
-    print_error "pip nicht gefunden in Virtual Environment: $VENV_PIP"
+    print_warning "pip nicht gefunden in Virtual Environment - installiere pip..."
+    print_status "Debug: Virtual Environment Verzeichnisstruktur:"
     ls -la "$INSTALL_DIR/.venv/bin/" || true
-    exit 1
+    
+    # Installiere pip über ensurepip im Virtual Environment
+    print_status "Installiere pip über ensurepip..."
+    sudo -u $SERVICE_USER "$VENV_PYTHON" -m ensurepip --default-pip
+    
+    # Falls ensurepip nicht verfügbar, versuche get-pip.py
+    if [ ! -f "$VENV_PIP" ]; then
+        print_status "ensurepip nicht verfügbar - verwende get-pip.py..."
+        wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+        sudo -u $SERVICE_USER "$VENV_PYTHON" /tmp/get-pip.py
+        rm -f /tmp/get-pip.py
+    fi
+    
+    # Finale Prüfung
+    if [ ! -f "$VENV_PIP" ]; then
+        print_error "pip konnte nicht installiert werden!"
+        print_status "Verfügbare Python-Module:"
+        sudo -u $SERVICE_USER "$VENV_PYTHON" -c "import sys; print('\\n'.join(sys.modules.keys()))" || true
+        exit 1
+    fi
+    
+    print_success "pip erfolgreich installiert"
 fi
 
+# Upgrade pip
+print_status "Aktualisiere pip..."
 sudo -u $SERVICE_USER "$VENV_PIP" install --upgrade pip
 
 # Requirements.txt prüfen und erweitern falls nötig
@@ -417,7 +445,6 @@ EOF
 fi
 
 # Install requirements mit absoluten Pfaden
-VENV_PYTHON="$INSTALL_DIR/.venv/bin/python"
 sudo -u $SERVICE_USER "$VENV_PIP" install -r requirements.txt
 
 # Test der Installation
