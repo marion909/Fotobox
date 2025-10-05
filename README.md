@@ -106,14 +106,27 @@ gphoto2 --capture-image-and-download
 
 ### 🖨️ Drucker-Setup (optional)
 ```bash
-# CUPS installieren und konfigurieren
-sudo apt install cups cups-client
+# Option 1: Automatisches Drucker-Setup
+chmod +x setup_printer.sh
+sudo ./setup_printer.sh
+
+# Option 2: Manuelle CUPS-Installation
+sudo apt update
+sudo apt install cups cups-client printer-driver-all
 sudo systemctl enable cups
 sudo systemctl start cups
 
-# Web-Interface: http://localhost:631
-# Drucker hinzufügen und testen
+# Web-Interface öffnen: http://localhost:631
+# Benutzer zu lpadmin Gruppe hinzufügen
+sudo usermod -a -G lpadmin $USER
+
+# Drucker hinzufügen und testen über Web-Interface
 ```
+
+**Canon-Drucker Tipps:**
+- Für Canon PIXMA-Serie: Gutenprint-Treiber verwenden
+- Offizielle Canon-Treiber von [canon.de](https://canon.de) herunterladen
+- Bei Problemen: Generic PostScript-Treiber probieren
 
 ### ☁️ Server-Upload konfigurieren
 1. **Admin-Panel öffnen:** `http://localhost:5000/admin`
@@ -305,11 +318,35 @@ sudo netstat -tulpn | grep :5000
 **Permissions-Probleme:**
 ```bash
 # Benutzer zu nötigen Gruppen hinzufügen
-sudo usermod -a -G dialout,plugdev $USER
+sudo usermod -a -G dialout,plugdev,lpadmin $USER
 
 # Udev-Regeln für Kamera
 sudo cp scripts/99-gphoto2.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
+
+# Nach Gruppen-Änderung neu anmelden
+newgrp lpadmin
+```
+
+**Drucker-Probleme:**
+```bash
+# CUPS-Status prüfen
+sudo systemctl status cups
+
+# Verfügbare Drucker anzeigen
+lpstat -p -d
+
+# Drucker-Warteschlange anzeigen
+lpq
+
+# CUPS Web-Interface
+# http://localhost:631
+
+# Drucker-Logs anzeigen
+sudo tail -f /var/log/cups/error_log
+
+# Canon-Drucker spezifisch
+lsusb | grep -i canon
 ```
 
 ### Log-Dateien

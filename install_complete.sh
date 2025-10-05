@@ -104,6 +104,8 @@ apt install -y \
 
 print_step "Drucker-System (CUPS)"
 print_status "Installiere CUPS und Drucker-Treiber..."
+
+# Basis CUPS-Pakete installieren
 apt install -y \
     cups \
     cups-client \
@@ -111,8 +113,19 @@ apt install -y \
     cups-filters \
     cups-common \
     printer-driver-all \
-    printer-driver-hpijs \
-    printer-driver-canon
+    printer-driver-hpijs
+
+# Canon-Treiber optional installieren (falls verfügbar)
+print_status "Versuche Canon-Treiber zu installieren..."
+if apt-cache show printer-driver-canon >/dev/null 2>&1; then
+    print_status "Canon-Treiber gefunden - installiere..."
+    apt install -y printer-driver-canon
+    print_success "Canon-Treiber erfolgreich installiert"
+else
+    print_warning "Canon-Treiber nicht verfügbar - manuell installieren falls benötigt"
+    print_status "Alternative: Gutenprint-Treiber installieren..."
+    apt install -y printer-driver-gutenprint || true
+fi
 
 # CUPS für lokalen Zugriff konfigurieren
 usermod -a -G lpadmin $SERVICE_USER
