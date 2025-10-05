@@ -18,7 +18,7 @@ from config import get_config, save_config, set_setting
 from overlay_manager import OverlayManager
 from print_manager import PrintManager
 from upload_manager import UploadManager
-from camera_manager import camera_manager
+from optimal_camera_manager import optimal_camera_manager
 
 app = Flask(__name__)
 app.secret_key = 'photobox_phase2_secret_key_change_in_production'
@@ -33,8 +33,8 @@ overlay_manager = OverlayManager(config)
 print_manager = PrintManager(config)  
 upload_manager = UploadManager(config)
 
-# Verwende den importierten camera_manager
-camera = camera_manager
+# Verwende den optimalen camera manager (nur gphoto2 Python)
+camera = optimal_camera_manager
 
 class PhotoManager:
     """Verwaltung der aufgenommenen Fotos"""

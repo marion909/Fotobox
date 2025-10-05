@@ -7,6 +7,9 @@ pillow==10.4.0
 requests==2.32.3
 werkzeug==3.0.1
 
+# Optimal Camera Integration  
+gphoto2>=2.5.0              # Zuverlässige Canon EOS Integration
+
 # Phase 2 Dependencies - Overlays, Printing, Upload  
 paramiko==3.3.1
 dataclasses-json==0.6.2
