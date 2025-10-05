@@ -77,22 +77,15 @@ echo
 # 4. OPTIMAL CAMERA MANAGER AKTIVIEREN
 echo "4️⃣ Optimal Camera Manager aktivieren..."
 
-# Backup alte camera_manager.py
-if [ -f "camera_manager.py" ]; then
-    cp camera_manager.py camera_manager_backup_$(date +%s).py
-    echo "  💾 Backup der alten camera_manager.py erstellt"
-fi
-
-# Aktiviere optimal camera manager
+# Prüfe Optimal Camera Manager
 if [ -f "optimal_camera_manager.py" ]; then
-    cp optimal_camera_manager.py camera_manager.py
-    echo "  🚀 Optimal Camera Manager aktiviert"
+    echo "  🚀 Optimal Camera Manager gefunden"
     
     # Teste Import
-    if python3 -c "from camera_manager import camera_manager; print('✅ Import erfolgreich')"; then
-        echo "  ✅ Camera Manager Import funktioniert"
+    if python3 -c "from optimal_camera_manager import optimal_camera_manager; print('✅ Import erfolgreich')"; then
+        echo "  ✅ Optimal Camera Manager Import funktioniert"
     else
-        echo "  ⚠️ Camera Manager Import-Problem"
+        echo "  ⚠️ Optimal Camera Manager Import-Problem"
     fi
 else
     echo "  ❌ optimal_camera_manager.py nicht gefunden"
