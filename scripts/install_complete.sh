@@ -312,10 +312,10 @@ if [ -d "$INSTALL_DIR" ]; then
             sudo -u $SERVICE_USER git pull
         fi
         
-        # Nach erfolgreichem Update: Springe zur venv-Setup
+        # Nach erfolgreichem Update: Continue with installation
         if [ -d "$INSTALL_DIR" ]; then
             print_success "Repository erfolgreich aktualisiert"
-            goto_venv_setup
+            cd "$INSTALL_DIR"
         fi
     else
         print_warning "Kein Git-Repository gefunden in $INSTALL_DIR"
@@ -343,7 +343,7 @@ print_status "Clone Repository von GitHub..."
 sudo -u $SERVICE_USER git clone "$REPO_URL" "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-goto_venv_setup() {
+# Python Virtual Environment Setup
 print_step "Python Virtual Environment"
 print_status "Erstelle Virtual Environment..."
 sudo -u $SERVICE_USER python3 -m venv .venv
