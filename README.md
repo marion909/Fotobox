@@ -405,6 +405,34 @@ Fotobox/
 
 ## 🔍 Fehlerbehebung
 
+### 🚨 Frontend lädt nicht nach Installation
+
+**Schnellste Lösung:**
+```bash
+# Automatische Diagnose ausführen:
+curl -sSL https://raw.githubusercontent.com/marion909/Fotobox/master/scripts/diagnose_installation.sh | bash
+```
+
+**Häufigste Probleme & Schnell-Fixes:**
+```bash
+# Service prüfen und starten:
+sudo systemctl status photobox
+sudo systemctl start photobox
+sudo systemctl enable photobox
+
+# Service-Logs anzeigen:
+sudo journalctl -u photobox -f
+
+# Virtual Environment neu erstellen:
+cd /home/pi/Photobox
+rm -rf .venv
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+sudo systemctl restart photobox
+```
+
+📋 **Detaillierte Anleitung:** [Frontend Troubleshooting Guide](docs/troubleshooting-frontend.md)
+
 ### Häufige Probleme
 
 **Kamera nicht erkannt:**
