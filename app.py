@@ -51,71 +51,140 @@ class CameraController:
             return False
     
     def take_photo(self, filename=None, apply_overlays=True, auto_print=None, auto_upload=None):
-        """Nimmt ein Foto auf mit Phase 2 Features"""
+        """Nimmt ein Foto auf mit robuster Canon EOS Device-Busy-Behandlung"""
         if not filename:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"photo_{timestamp}.jpg"
         
         filepath = os.path.join(config.photo_dir, filename)
         
-        try:
-            # Foto aufnehmen und direkt speichern
-            result = subprocess.run([
-                'gphoto2', 
-                '--capture-image-and-download',
-                '--filename', filepath
-            ], capture_output=True, text=True, check=True)
-            
-            if os.path.exists(filepath):
-                response = {
-                    'success': True,
-                    'filename': filename,
-                    'filepath': filepath,
-                    'message': 'Foto erfolgreich aufgenommen!',
-                    'overlay_applied': False,
-                    'print_queued': False,
-                    'upload_queued': False
-                }
+        # Robuste Foto-Aufnahme mit mehreren Versuchen
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            try:
+                print(f"📸 Foto-Aufnahme Versuch {attempt}/{max_attempts}...")
                 
-                # Phase 2: Overlays anwenden
-                if apply_overlays and config.overlay.enabled:
-                    try:
-                        overlay_path = overlay_manager.apply_overlays(filepath)
-                        response['overlay_applied'] = True
-                        response['overlay_path'] = overlay_path
-                        response['message'] += ' Overlay angewendet.'
-                    except Exception as e:
-                        print(f"⚠️ Overlay-Fehler: {e}")
+                # Bei wiederholten Versuchen: Kurze Pause und gphoto2-Prozesse beenden
+                if attempt > 1:
+                    print(f"⏳ Warte 2 Sekunden vor Versuch {attempt}...")
+                    time.sleep(2)
+                    # Alte gphoto2-Prozesse beenden die eventuell hängen
+                    subprocess.run(['pkill', '-f', 'gphoto2'], capture_output=True)
+                    time.sleep(1)
                 
-                # Phase 2: Automatisches Drucken
-                if (auto_print or config.printing.auto_print) and config.printing.enabled:
-                    threading.Thread(target=self._async_print, args=(filepath,)).start()
-                    response['print_queued'] = True
-                    response['message'] += ' Druck eingeplant.'
+                # Foto aufnehmen mit timeout
+                result = subprocess.run([
+                    'gphoto2', 
+                    '--capture-image-and-download',
+                    '--filename', filepath
+                ], capture_output=True, text=True, check=True, timeout=30)
                 
-                # Phase 2: Automatischer Upload
-                if (auto_upload or config.upload.auto_upload) and config.upload.enabled:
-                    threading.Thread(target=self._async_upload, args=(filepath,)).start()
-                    response['upload_queued'] = True  
-                    response['message'] += ' Upload eingeplant.'
+                # Prüfe ob Datei wirklich erstellt wurde
+                if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:  # Min. 1KB
+                    print(f"✅ Foto erfolgreich aufgenommen: {filename}")
+                    
+                    response = {
+                        'success': True,
+                        'filename': filename,
+                        'filepath': filepath,
+                        'message': f'Foto erfolgreich aufgenommen! (Versuch {attempt})',
+                        'attempts': attempt,
+                        'overlay_applied': False,
+                        'print_queued': False,
+                        'upload_queued': False
+                    }
+                    
+                    # Phase 2: Overlays anwenden
+                    if apply_overlays and config.overlay.enabled:
+                        try:
+                            overlay_path = overlay_manager.apply_overlays(filepath)
+                            response['overlay_applied'] = True
+                            response['overlay_path'] = overlay_path
+                            response['message'] += ' Overlay angewendet.'
+                        except Exception as e:
+                            print(f"⚠️ Overlay-Fehler: {e}")
+                    
+                    # Phase 2: Automatisches Drucken
+                    if (auto_print or config.printing.auto_print) and config.printing.enabled:
+                        threading.Thread(target=self._async_print, args=(filepath,)).start()
+                        response['print_queued'] = True
+                        response['message'] += ' Druck eingeplant.'
+                    
+                    # Phase 2: Automatischer Upload
+                    if (auto_upload or config.upload.auto_upload) and config.upload.enabled:
+                        threading.Thread(target=self._async_upload, args=(filepath,)).start()
+                        response['upload_queued'] = True  
+                        response['message'] += ' Upload eingeplant.'
+                    
+                    return response
+                else:
+                    raise Exception("Foto-Datei nicht erstellt oder zu klein")
+                    
+            except subprocess.TimeoutExpired:
+                print(f"⏰ Timeout bei Versuch {attempt} - gphoto2 hängt")
+                # Hängende Prozesse beenden
+                subprocess.run(['pkill', '-9', '-f', 'gphoto2'], capture_output=True)
+                if attempt < max_attempts:
+                    continue
+                else:
+                    return {
+                        'success': False,
+                        'message': f'Foto-Aufnahme nach {max_attempts} Versuchen fehlgeschlagen: Timeout'
+                    }
+                    
+            except subprocess.CalledProcessError as e:
+                error_msg = e.stderr.lower() if e.stderr else ""
                 
-                return response
-            else:
+                # Spezielle Behandlung für "Device Busy" Fehler
+                if "device busy" in error_msg or "0x2019" in error_msg:
+                    print(f"⚠️ Device Busy Fehler bei Versuch {attempt}")
+                    if attempt < max_attempts:
+                        print("🔄 Führe Camera-Reset durch...")
+                        # Erweiterte Reset-Prozedur
+                        subprocess.run(['pkill', '-f', 'gphoto2'], capture_output=True)
+                        time.sleep(1)
+                        # Versuche USB-Reset (falls Root-Rechte vorhanden)
+                        try:
+                            subprocess.run(['./fix_camera_busy.sh', '--reset'], 
+                                         capture_output=True, timeout=10)
+                        except:
+                            pass  # Falls Script nicht verfügbar
+                        continue
+                    else:
+                        return {
+                            'success': False,
+                            'message': f'Canon EOS Device Busy Fehler - Versuche: ./fix_camera_busy.sh --reset'
+                        }
+                else:
+                    print(f"❌ gphoto2 Fehler bei Versuch {attempt}: {e.stderr}")
+                    if attempt < max_attempts:
+                        continue
+                    else:
+                        return {
+                            'success': False,
+                            'message': f'Kamera-Fehler nach {max_attempts} Versuchen: {e.stderr}'
+                        }
+                        
+            except FileNotFoundError:
                 return {
                     'success': False,
-                    'message': 'Fehler beim Speichern des Fotos'
+                    'message': 'gphoto2 nicht installiert oder nicht im PATH'
                 }
-                
-        except subprocess.CalledProcessError as e:
-            return {
-                'success': False,
-                'message': f'Kamera-Fehler: {e.stderr}'
-            }
-        except FileNotFoundError:
-            return {
-                'success': False,
-                'message': 'gphoto2 nicht installiert oder nicht im PATH'
-            }
+            except Exception as e:
+                print(f"❌ Unerwarteter Fehler bei Versuch {attempt}: {e}")
+                if attempt < max_attempts:
+                    continue
+                else:
+                    return {
+                        'success': False,
+                        'message': f'Unerwarteter Fehler: {str(e)}'
+                    }
+        
+        # Falls alle Versuche fehlschlagen
+        return {
+            'success': False,
+            'message': f'Foto-Aufnahme nach {max_attempts} Versuchen fehlgeschlagen'
+        }
     
     def _async_print(self, filepath):
         """Asynchrones Drucken"""

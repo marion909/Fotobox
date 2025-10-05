@@ -167,6 +167,8 @@ sudo journalctl -u photobox -f         # Live-Logs anzeigen
 # Updates & Wartung
 sudo ./update_photobox.sh              # Sichere Update-Installation
 ./fix_camera_usb.sh                    # Kamera-USB-Probleme beheben
+./fix_camera_busy.sh                   # Canon EOS Device-Busy-Probleme beheben
+./fix_camera_busy.sh --test 5          # Teste 5 aufeinanderfolgende Aufnahmen
 sudo ./cleanup_photobox.sh             # Komplette Deinstallation (⚠️ Löscht ALLE Daten!)
 sudo reboot                            # Bei Problemen: Neustart
 ```
@@ -465,6 +467,60 @@ sudo systemctl mask gvfs-daemon
 # Stromversorgung prüfen
 # Starkes USB-Netzteil (min. 3A) für Raspberry Pi verwenden
 # Kamera-Akku voll geladen
+```
+
+**Canon EOS "Device Busy" Problem (0x2019):**
+
+**🚀 Automatische Lösung (empfohlen):**
+```bash
+# Spezielles Script für Device-Busy-Probleme
+chmod +x fix_camera_busy.sh
+./fix_camera_busy.sh
+
+# Teste mehrere aufeinanderfolgende Aufnahmen
+./fix_camera_busy.sh --test 5
+
+# Einzelne robuste Aufnahme
+./fix_camera_busy.sh --capture "test_%Y%m%d_%H%M%S.jpg"
+
+# Permanente Fixes installieren
+./fix_camera_busy.sh --install-fix
+```
+
+**📋 Was ist das Device-Busy-Problem?**
+- Canon EOS Kameras bleiben nach Foto-Aufnahme im "Busy"-Zustand
+- Zweite Aufnahme direkt danach schlägt fehl: "PTP Device Busy (0x2019)"
+- Besonders häufig bei EOS 1500D, 2000D, 4000D Serie
+- Tritt auf bei schnell aufeinanderfolgenden Fotos
+
+**🔧 Manueller Fix:**
+```bash
+# 1. Sofort-Fix für einzelnes Foto
+sudo pkill -f gphoto2                # Hängende Prozesse beenden
+sleep 2                              # Kurze Pause
+gphoto2 --capture-image-and-download # Erneut versuchen
+
+# 2. USB-Reset für hartnäckige Fälle
+./fix_camera_busy.sh --reset         # Vollständiger Kamera-Reset
+
+# 3. Optimierte Aufnahme-Serie
+for i in {1..5}; do
+    echo "Foto $i..."
+    gphoto2 --capture-image-and-download --filename "test_$i.jpg"
+    sleep 3  # 3 Sekunden Pause zwischen Fotos
+done
+```
+
+**⚙️ Permanente Optimierungen:**
+```bash
+# Installiere automatische Fixes
+./fix_camera_busy.sh --install-fix
+
+# Was wird installiert:
+# - Optimierte gphoto2-Konfiguration
+# - USB-Power-Management für Canon-Kameras  
+# - Automatischer Reset-Service bei Device-Busy
+# - Udev-Regeln für Canon-EOS-Optimierung
 ```
 
 **Port bereits belegt:**
