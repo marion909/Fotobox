@@ -41,6 +41,14 @@ temp/
 logs/
 !logs/.gitkeep
 
+# Canon EDSDK (proprietäre Dateien - nicht distribuieren)
+EDSDK/*.dll
+EDSDK/*.so
+EDSDK/*.dylib
+EDSDK/EDSDK*
+!EDSDK/*.pas
+!EDSDK/README.md
+
 # Test-Ergebnisse
 test_results.json
 *.tmp

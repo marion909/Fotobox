@@ -36,35 +36,43 @@ echo "  ✅ Neueste Verbesserungen abgerufen"
 echo
 
 # 2. EDSDK STATUS (detailliert)
-echo "2️⃣ Canon EDSDK Status (vollständig)..."
+echo "2️⃣ Canon EDSDK Status (Lizenz-Information)..."
 
 if [ -d "EDSDK" ]; then
     echo "  📂 EDSDK Verzeichnis: ✅"
     
-    # Zeige alle EDSDK-Dateien
-    echo "  📋 EDSDK Inhalt:"
-    ls -la EDSDK/ | while read line; do echo "    $line"; done
+    # Zeige EDSDK-Dateien (ohne DLL-Details für Datenschutz)
+    PAS_COUNT=$(find EDSDK -name "*.pas" 2>/dev/null | wc -l)
+    echo "  📝 Canon Headers: $PAS_COUNT Pascal-Dateien"
     
     # Prüfe auf DLL
     if [ -f "EDSDK/EDSDK.dll" ]; then
         DLL_SIZE=$(stat -c%s EDSDK/EDSDK.dll 2>/dev/null || stat -f%z EDSDK/EDSDK.dll)
-        echo "  ✅ EDSDK.dll gefunden (${DLL_SIZE} Bytes)"
+        echo "  ✅ EDSDK.dll vorhanden (${DLL_SIZE} Bytes)"
+        echo "  📄 Lizenz: Benutzer muss Canon EDSDK separat von Canon beziehen"
         
         # Prüfe DLL-Architektur (Linux/macOS)
         if command -v file >/dev/null 2>&1; then
-            DLL_ARCH=$(file EDSDK/EDSDK.dll)
-            echo "  🏗️  DLL Info: $DLL_ARCH"
+            DLL_ARCH=$(file EDSDK/EDSDK.dll | grep -o "PE32\+\|PE32")
+            if [ -n "$DLL_ARCH" ]; then
+                echo "  🏗️  DLL Architektur: $DLL_ARCH"
+            fi
         fi
     else
-        echo "  ❌ EDSDK.dll nicht gefunden"
+        echo "  ⚠️  EDSDK.dll nicht gefunden"
+        echo "  💡 Download erforderlich von: https://developers.canon-europe.com/"
+        echo "  📄 Hinweis: Canon EDSDK ist proprietär und muss separat bezogen werden"
     fi
     
-    # Pascal Headers
-    PAS_COUNT=$(find EDSDK -name "*.pas" 2>/dev/null | wc -l)
-    echo "  📝 Pascal Headers: $PAS_COUNT Dateien"
-    
 else
-    echo "  ❌ EDSDK Verzeichnis fehlt"
+    echo "  📂 EDSDK Verzeichnis wird erstellt..."
+    mkdir -p EDSDK
+    echo "  💡 EDSDK Download erforderlich:"
+    echo "     1. Besuche: https://developers.canon-europe.com/"
+    echo "     2. Erstelle kostenlosen Developer Account"
+    echo "     3. Download Canon EDSDK"
+    echo "     4. Kopiere EDSDK.dll ins EDSDK/ Verzeichnis"
+    echo "  📄 Rechtlich: EDSDK ist Canon's Eigentum, separate Lizenz erforderlich"
 fi
 echo
 
