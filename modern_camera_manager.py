@@ -21,11 +21,25 @@ CAMERA_APIS = {
 
 # Teste verfügbare APIs
 try:
-    import canon_edsdk
-    CAMERA_APIS['edsdk'] = True
-    print("✅ Canon EDSDK verfügbar")
-except ImportError:
-    print("⚠️ Canon EDSDK nicht verfügbar")
+    # Prüfe ob EDSDK-Verzeichnis existiert
+    edsdk_path = os.path.join(os.path.dirname(__file__), 'EDSDK')
+    if os.path.exists(edsdk_path):
+        # Prüfe auf EDSDK DLL
+        dll_files = [f for f in os.listdir(edsdk_path) if f.lower().endswith('.dll') and 'edsdk' in f.lower()]
+        if dll_files:
+            # Versuche unseren Wrapper zu importieren
+            try:
+                from canon_edsdk_wrapper import CanonEOSCamera
+                CAMERA_APIS['edsdk'] = True
+                print(f"✅ Canon EDSDK verfügbar (DLL: {dll_files[0]})")
+            except ImportError as e:
+                print(f"⚠️ Canon EDSDK Wrapper Fehler: {e}")
+        else:
+            print("⚠️ Canon EDSDK Verzeichnis gefunden, aber keine DLL")
+    else:
+        print("⚠️ Canon EDSDK Verzeichnis nicht gefunden")
+except Exception as e:
+    print(f"⚠️ Canon EDSDK Check Fehler: {e}")
 
 try:
     import gphoto2 as gp
