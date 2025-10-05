@@ -82,14 +82,46 @@ class CameraManager:
                     subprocess.run(['pkill', '-f', 'gphoto2'], capture_output=True)
                     time.sleep(1)
                 
-                # Foto aufnehmen mit timeout
-                result = subprocess.run([
-                    'gphoto2', 
-                    '--capture-image-and-download',
-                    '--filename', filepath
-                ], capture_output=True, text=True, check=True, timeout=30)
+                # ROBUST: 2-Schritt-Methode (Canon EOS funktioniert besser so)
+                print(f"🔧 Verwende 2-Schritt-Capture-Methode...")
                 
-                # Prüfe ob Datei wirklich erstellt wurde
+                # Schritt 1: Foto auf Kamera aufnehmen
+                capture_result = subprocess.run([
+                    'gphoto2', '--capture-image'
+                ], capture_output=True, text=True, check=True, timeout=15)
+                
+                print(f"📸 Capture-Ergebnis: {capture_result.stdout}")
+                
+                # Schritt 2: Ins Zielverzeichnis wechseln und herunterladen
+                original_dir = os.getcwd()
+                try:
+                    os.chdir(os.path.dirname(filepath))
+                    filename_only = os.path.basename(filepath)
+                    
+                    # Alle neuen Dateien herunterladen
+                    download_result = subprocess.run([
+                        'gphoto2', 
+                        '--get-all-files',
+                        '--delete-after'
+                    ], capture_output=True, text=True, timeout=15)
+                    
+                    print(f"💾 Download-Ergebnis: {download_result.stdout}")
+                    
+                    # Finde die heruntergeladene Datei (meist capt0000.jpg o.ä.)
+                    photo_dir = os.path.dirname(filepath)
+                    for file in os.listdir(photo_dir):
+                        if file.lower().startswith('capt') and file.lower().endswith('.jpg'):
+                            downloaded_file = os.path.join(photo_dir, file)
+                            if os.path.exists(downloaded_file) and os.path.getsize(downloaded_file) > 1000:
+                                # Benenne um zum gewünschten Dateinamen
+                                os.rename(downloaded_file, filepath)
+                                print(f"✅ Datei umbenannt: {file} → {filename_only}")
+                                break
+                    
+                finally:
+                    os.chdir(original_dir)
+                
+                # Prüfe ob Datei wirklich erstellt wurde und gültige Größe hat
                 if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:  # Min. 1KB
                     print(f"✅ Foto erfolgreich aufgenommen: {filename}")
                     
