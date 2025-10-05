@@ -110,6 +110,30 @@ def api_preview_image():
     else:
         return "Preview nicht verfügbar", 404
 
+@app.route('/api/latest_photo')
+def api_latest_photo():
+    """API Endpoint für letztes aufgenommenes Foto"""
+    try:
+        photos = PhotoManager.get_all_photos()
+        if photos:
+            latest_photo = photos[0]  # Neuestes Foto (Liste ist sortiert)
+            return jsonify({
+                'success': True,
+                'photo_url': latest_photo['url'],
+                'filename': latest_photo['filename'],
+                'created': latest_photo['created'].isoformat() if hasattr(latest_photo['created'], 'isoformat') else str(latest_photo['created'])
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Keine Fotos vorhanden'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Fehler beim Laden des letzten Fotos: {str(e)}'
+        })
+
 @app.route('/api/camera_status')
 def api_camera_status():
     """API Endpoint für Kamera-Status"""

@@ -648,7 +648,393 @@ body {
     }
 }
 
-/* Phase 2 Styles */
+/* ===== MINIMALISTISCHES UI DESIGN ===== */
+
+.fotobox-minimal {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dynamischer Hintergrund mit letztem Foto */
+.background-photo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.8s ease;
+    z-index: 1;
+}
+
+.background-photo.photo-loaded {
+    filter: blur(8px) brightness(0.7);
+}
+
+.background-photo.fade-to-static {
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    filter: none;
+    transition: all 1.5s ease;
+}
+
+.background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+/* Menü-Toggle Button (oben rechts) */
+.menu-toggle {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.menu-toggle:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.menu-toggle.menu-active {
+    background: var(--primary-color);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.menu-toggle svg {
+    transition: all 0.3s ease;
+}
+
+/* Slide-Out Menü */
+.slide-menu {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.slide-menu.menu-open {
+    right: 0;
+}
+
+.menu-header {
+    padding: 30px 30px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.menu-header h3 {
+    font-size: 1.5rem;
+    color: var(--dark-color);
+    margin: 0;
+}
+
+.menu-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--secondary-color);
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.menu-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--dark-color);
+}
+
+.menu-items {
+    flex: 1;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 30px;
+    text-decoration: none;
+    color: var(--dark-color);
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.menu-item:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.menu-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
+    width: 30px;
+}
+
+.menu-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    flex: 1;
+}
+
+.menu-count {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    background: rgba(0, 0, 0, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.menu-status {
+    margin-top: auto;
+    padding: 20px 30px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.status-online {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.status-offline {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+/* Hauptbereich - Zentraler Button */
+.main-center {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.photo-action {
+    text-align: center;
+}
+
+.main-photo-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    padding: 20px;
+}
+
+.main-photo-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.button-ring {
+    width: 200px;
+    height: 200px;
+    border: 8px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    position: relative;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.main-photo-button:hover .button-ring {
+    transform: scale(1.1);
+    border-color: white;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.main-photo-button:active .button-ring {
+    transform: scale(0.95);
+}
+
+.button-inner {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.main-photo-button:hover .button-inner {
+    background: white;
+    transform: scale(1.05);
+}
+
+.camera-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.main-photo-button:hover .camera-icon {
+    color: var(--success-color);
+    transform: scale(1.1);
+}
+
+.button-label {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.main-photo-button:hover .button-label {
+    color: #fff;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    transform: translateY(-5px);
+}
+
+/* Verbindungswarnung */
+.connection-warning {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    max-width: 300px;
+}
+
+.connection-warning p {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.connection-warning small {
+    opacity: 0.9;
+}
+
+/* Status-Bar (unten) */
+.status-bar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.status-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 25px;
+    color: white;
+    font-size: 0.9rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Touch-Optimierungen */
+@media (max-width: 768px) {
+    .menu-toggle {
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .slide-menu {
+        width: 300px;
+        right: -300px;
+    }
+    
+    .button-ring {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .button-inner {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .camera-icon {
+        font-size: 3rem;
+    }
+    
+    .button-label {
+        font-size: 1.2rem;
+    }
+    
+    .status-bar {
+        bottom: 20px;
+    }
+}
+
+/* Animationen */
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+.main-photo-button:not(:disabled):hover .button-ring {
+    animation: pulse-ring 2s infinite;
+}
+
+/* Phase 4 Styles - Advanced Features */
 
 /* Toggle Switches */
 .toggle-switch {
