@@ -354,10 +354,41 @@ cd "$INSTALL_DIR"
 # Python Virtual Environment Setup
 print_step "Python Virtual Environment"
 print_status "Erstelle Virtual Environment..."
-sudo -u $SERVICE_USER python3 -m venv .venv
+
+# Prüfe ob Virtual Environment bereits existiert
+if [ -d ".venv" ]; then
+    print_status "Virtual Environment bereits vorhanden - prüfe Integrität..."
+    if [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/bin/pip" ]; then
+        print_warning "Virtual Environment beschädigt - erstelle neu..."
+        rm -rf .venv
+    fi
+fi
+
+# Erstelle Virtual Environment falls nicht vorhanden
+if [ ! -d ".venv" ]; then
+    print_status "Erstelle neues Virtual Environment..."
+    sudo -u $SERVICE_USER python3 -m venv .venv
+    
+    # Prüfe ob Virtual Environment korrekt erstellt wurde
+    if [ ! -f ".venv/bin/python" ]; then
+        print_error "Virtual Environment konnte nicht erstellt werden!"
+        print_status "Prüfe Python3-Installation..."
+        python3 --version
+        exit 1
+    fi
+fi
 
 print_status "Aktiviere Virtual Environment und installiere Pakete..."
-sudo -u $SERVICE_USER ./.venv/bin/pip install --upgrade pip
+
+# Verwende absoluten Pfad für pip
+VENV_PIP="$INSTALL_DIR/.venv/bin/pip"
+if [ ! -f "$VENV_PIP" ]; then
+    print_error "pip nicht gefunden in Virtual Environment: $VENV_PIP"
+    ls -la "$INSTALL_DIR/.venv/bin/" || true
+    exit 1
+fi
+
+sudo -u $SERVICE_USER "$VENV_PIP" install --upgrade pip
 
 # Requirements.txt prüfen und erweitern falls nötig
 if [ ! -f "requirements.txt" ]; then
@@ -385,14 +416,19 @@ EOF
     chown $SERVICE_USER:$SERVICE_USER requirements.txt
 fi
 
-sudo -u $SERVICE_USER ./.venv/bin/pip install -r requirements.txt
+# Install requirements mit absoluten Pfaden
+VENV_PYTHON="$INSTALL_DIR/.venv/bin/python"
+sudo -u $SERVICE_USER "$VENV_PIP" install -r requirements.txt
 
 # Test der Installation
 print_status "Teste Python-Installation..."
-if sudo -u $SERVICE_USER ./.venv/bin/python -c "import flask, PIL, requests; print('✅ Alle Python-Pakete erfolgreich installiert')"; then
+if sudo -u $SERVICE_USER "$VENV_PYTHON" -c "import flask, PIL, requests; print('✅ Alle Python-Pakete erfolgreich installiert')"; then
     print_success "Python-Environment korrekt eingerichtet"
 else
     print_error "Fehler bei Python-Paket-Installation"
+    print_status "Debug: Virtual Environment Verzeichnisstruktur:"
+    ls -la "$INSTALL_DIR/.venv/bin/" || true
+    exit 1
 fi
 
 print_step "Photobox Konfiguration"
