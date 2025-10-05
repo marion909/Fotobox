@@ -535,14 +535,20 @@ print_step "Systemd Service"
 print_status "Erstelle robustes Photobox Service..."
 
 # Pre-Start Script für Umgebungsvorbereitung
-cat > $INSTALL_DIR/start_photobox.sh << 'EOF'
+cat > $INSTALL_DIR/start_photobox.sh << EOF
 #!/bin/bash
 
 # Photobox Startup Script mit Fehlerbehandlung
 LOG_FILE="/var/log/photobox_startup.log"
-INSTALL_DIR="/home/pi/Fotobox"
+INSTALL_DIR="$INSTALL_DIR"
 
-echo "$(date): Photobox Startup gestartet" >> $LOG_FILE
+# Log-Verzeichnis und Berechtigungen sicherstellen
+mkdir -p /var/log
+touch "\$LOG_FILE" /var/log/photobox_app.log
+chown pi:pi "\$LOG_FILE" /var/log/photobox_app.log
+chmod 664 "\$LOG_FILE" /var/log/photobox_app.log
+
+echo "\$(date): Photobox Startup gestartet" >> "\$LOG_FILE"
 
 # USB-Konflikte beheben
 killall gphoto2 gvfs-gphoto2-volume-monitor 2>/dev/null || true
@@ -556,16 +562,16 @@ sleep 2
 modprobe uvcvideo 2>/dev/null || true
 
 # Verzeichnisse sicherstellen
-mkdir -p $INSTALL_DIR/{photos,overlays,temp,backups,logs}
-chown -R pi:pi $INSTALL_DIR/{photos,overlays,temp,backups,logs}
+mkdir -p "\$INSTALL_DIR"/{photos,overlays,temp,backups,logs}
+chown -R pi:pi "\$INSTALL_DIR"/{photos,overlays,temp,backups,logs}
 
 # Berechtigungen korrigieren
-chmod 755 $INSTALL_DIR/{photos,overlays,temp,backups,logs}
+chmod 755 "\$INSTALL_DIR"/{photos,overlays,temp,backups,logs}
 
-echo "$(date): Umgebung vorbereitet, starte App" >> $LOG_FILE
+echo "\$(date): Umgebung vorbereitet, starte App" >> "\$LOG_FILE"
 
 # Python-App starten
-cd $INSTALL_DIR
+cd "\$INSTALL_DIR"
 exec ./.venv/bin/python app.py 2>&1 | tee -a /var/log/photobox_app.log
 EOF
 
@@ -1129,9 +1135,12 @@ print_status "Setze Berechtigungen..."
 chown -R $SERVICE_USER:$SERVICE_USER "$INSTALL_DIR"
 chmod +x "$INSTALL_DIR"/*.sh
 
-# Log-Verzeichnis
-mkdir -p /var/log/photobox
-chown $SERVICE_USER:$SERVICE_USER /var/log/photobox
+# Log-Verzeichnis und Log-Dateien
+mkdir -p /var/log/photobox /var/log
+touch /var/log/photobox_startup.log /var/log/photobox_app.log
+chown $SERVICE_USER:$SERVICE_USER /var/log/photobox /var/log/photobox_startup.log /var/log/photobox_app.log
+chmod 755 /var/log/photobox
+chmod 664 /var/log/photobox_startup.log /var/log/photobox_app.log
 
 print_success "Installation erfolgreich abgeschlossen!"
 
