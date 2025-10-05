@@ -258,15 +258,23 @@ if [ -d "$INSTALL_DIR" ]; then
         # Prüfe auf lokale Änderungen
         if ! sudo -u $SERVICE_USER git diff --quiet || ! sudo -u $SERVICE_USER git diff --cached --quiet; then
             print_warning "Lokale Änderungen erkannt!"
-            echo ""
-            echo "Optionen:"
-            echo "1) Lokale Änderungen sichern und aktualisieren (empfohlen)"
-            echo "2) Lokale Änderungen überschreiben und aktualisieren"  
-            echo "3) Komplett neu installieren"
-            echo "4) Installation abbrechen"
-            echo ""
-            read -p "Wählen Sie eine Option (1-4): " -n 1 -r
-            echo
+            
+            # Automatische Auswahl bei non-interactive Modus
+            if [ -t 0 ] && [ "$DEBIAN_FRONTEND" != "noninteractive" ]; then
+                echo ""
+                echo "Optionen:"
+                echo "1) Lokale Änderungen sichern und aktualisieren (empfohlen)"
+                echo "2) Lokale Änderungen überschreiben und aktualisieren"  
+                echo "3) Komplett neu installieren"
+                echo "4) Installation abbrechen"
+                echo ""
+                read -p "Wählen Sie eine Option (1-4): " -n 1 -r
+                echo
+                REPLY=$REPLY
+            else
+                print_status "Non-interactive Modus - automatische Auswahl: Option 1 (Änderungen sichern)"
+                REPLY="1"
+            fi
             
             case $REPLY in
                 1)
@@ -311,8 +319,17 @@ if [ -d "$INSTALL_DIR" ]; then
         fi
     else
         print_warning "Kein Git-Repository gefunden in $INSTALL_DIR"
-        read -p "Verzeichnis löschen und neu installieren? (y/N): " -n 1 -r
-        echo
+        
+        # Automatische Auswahl bei non-interactive Modus
+        if [ -t 0 ] && [ "$DEBIAN_FRONTEND" != "noninteractive" ]; then
+            read -p "Verzeichnis löschen und neu installieren? (y/N): " -n 1 -r
+            echo
+            REPLY=$REPLY
+        else
+            print_status "Non-interactive Modus - automatisches Fortfahren: Verzeichnis wird gelöscht"
+            REPLY="y"
+        fi
+        
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             rm -rf "$INSTALL_DIR"
         else
