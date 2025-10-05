@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Photobox - Bereit für dein Foto!{% endblock %}
+
+{% block content %}
+<div class="photobox-main">
+    <!-- Header -->
+    <header class="header">
+        <h1>📸 Photobox</h1>
+        <div class="status">
+            {% if camera_connected %}
+                <span class="status-online">🟢 Kamera bereit</span>
+            {% else %}
+                <span class="status-offline">🔴 Kamera nicht verbunden</span>
+            {% endif %}
+            <span class="photo-count">📷 {{ photo_count }} Fotos</span>
+        </div>
+    </header>
+    
+    <!-- Hauptbereich -->
+    <main class="main-content">
+        <!-- Foto-Button -->
+        <div class="photo-section">
+            <button id="takePhotoBtn" class="photo-button" 
+                    {% if not camera_connected %}disabled{% endif %}>
+                <div class="button-content">
+                    <span class="camera-icon">📷</span>
+                    <span class="button-text">Foto aufnehmen</span>
+                </div>
+            </button>
+            
+            {% if not camera_connected %}
+                <p class="error-message">
+                    ⚠️ Kamera nicht verbunden. Bitte Verbindung prüfen.
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Letzte Fotos -->
+        {% if photos %}
+        <div class="recent-photos">
+            <h2>Letzte Aufnahmen</h2>
+            <div class="photo-grid">
+                {% for photo in photos %}
+                <div class="photo-item" onclick="showPhotoModal('{{ photo.url }}', '{{ photo.filename }}')">
+                    <img src="{{ photo.url }}" alt="Foto {{ photo.filename }}" loading="lazy">
+                    <div class="photo-info">
+                        <small>{{ photo.created|datetime }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if photo_count > 6 %}
+            <div class="view-all">
+                <a href="{{ url_for('gallery') }}" class="btn btn-secondary">
+                    Alle {{ photo_count }} Fotos anzeigen →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+    
+    <!-- Navigation -->
+    <nav class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="nav-item active">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Foto</span>
+        </a>
+        <a href="{{ url_for('gallery') }}" class="nav-item">
+            <span class="nav-icon">🖼️</span>
+            <span class="nav-text">Galerie</span>
+        </a>
+        <a href="{{ url_for('admin') }}" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Einstellungen</span>
+        </a>
+    </nav>
+</div>
+
+<!-- Foto Modal -->
+<div id="photoModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closePhotoModal()">&times;</span>
+        <img id="modalImage" src="" alt="Foto">
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="printPhoto()">🖨️ Drucken</button>
+            <button class="btn btn-secondary" onclick="sharePhoto()">📤 Teilen</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Foto aufnehmen
+document.getElementById('takePhotoBtn').addEventListener('click', function() {
+    if (this.disabled) return;
+    
+    showLoading();
+    
+    fetch('/api/take_photo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        
+        if (data.success) {
+            // Erfolg - Seite neu laden um neues Foto anzuzeigen
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            
+            // Erfolgsmeldung anzeigen
+            showNotification('📸 Foto erfolgreich aufgenommen!', 'success');
+        } else {
+            showNotification('❌ Fehler: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('❌ Verbindungsfehler: ' + error.message, 'error');
+    });
+});
+
+// Foto Modal
+function showPhotoModal(url, filename) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('photoModal').style.display = 'block';
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').style.display = 'none';
+}
+
+// Platzhalter für zukünftige Features
+function printPhoto() {
+    showNotification('🖨️ Drucken wird in Phase 2 implementiert', 'info');
+}
+
+function sharePhoto() {
+    showNotification('📤 Upload wird in Phase 2 implementiert', 'info');
+}
+
+// Schließe Modal bei Klick außerhalb
+window.onclick = function(event) {
+    const modal = document.getElementById('photoModal');
+    if (event.target == modal) {
+        closePhotoModal();
+    }
+}
+</script>
+{% endblock %}

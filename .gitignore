@@ -1,0 +1,83 @@
+# Photobox .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+photobox-env/
+venv/
+env/
+ENV/
+
+# Flask
+instance/
+.webassets-cache
+
+# Photobox spezifisch
+photos/
+!photos/.gitkeep
+temp/
+!temp/.gitkeep
+logs/
+!logs/.gitkeep
+
+# Test-Ergebnisse
+test_results.json
+*.tmp
+
+# OS spezifisch
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup-Dateien
+*.bak
+*.backup
+*.old
+
+# Systemd Logs
+*.log
+
+# Konfigurationsdateien mit Passwörtern
+config.local.py
+secrets.py
+
+# SSL Zertifikate
+*.pem
+*.key
+*.crt
+
+# Raspberry Pi spezifisch
+.bash_history
+.sudo_as_admin_successful

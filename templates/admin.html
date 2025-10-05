@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Einstellungen{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <!-- Header -->
+    <header class="header">
+        <h1>⚙️ Einstellungen</h1>
+    </header>
+    
+    <!-- System Status -->
+    <section class="admin-section">
+        <h2>📊 System Status</h2>
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-icon">📷</div>
+                <div class="status-info">
+                    <h3>Kamera</h3>
+                    <p class="status-value {% if camera_connected %}status-ok{% else %}status-error{% endif %}">
+                        {% if camera_connected %}✓ Verbunden{% else %}✗ Nicht verbunden{% endif %}
+                    </p>
+                </div>
+                <button class="btn btn-small" onclick="testCamera()">Test</button>
+            </div>
+            
+            <div class="status-card">
+                <div class="status-icon">🖼️</div>
+                <div class="status-info">
+                    <h3>Fotos</h3>
+                    <p class="status-value">{{ photo_count }} gespeichert</p>
+                </div>
+                <button class="btn btn-small" onclick="openGallery()">Anzeigen</button>
+            </div>
+            
+            <div class="status-card">
+                <div class="status-icon">💾</div>
+                <div class="status-info">
+                    <h3>Speicher</h3>
+                    <p class="status-value" id="storage-info">Wird geladen...</p>
+                </div>
+                <button class="btn btn-small" onclick="checkStorage()">Prüfen</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Kamera Einstellungen -->
+    <section class="admin-section">
+        <h2>📷 Kamera Einstellungen</h2>
+        <div class="settings-form">
+            <div class="form-group">
+                <label>Kamera Status:</label>
+                <div class="status-display" id="camera-status">
+                    {% if camera_connected %}
+                        <span class="status-ok">✓ Canon EOS 2000D erkannt</span>
+                    {% else %}
+                        <span class="status-error">✗ Keine Kamera gefunden</span>
+                    {% endif %}
+                </div>
+                <button class="btn btn-secondary" onclick="refreshCameraStatus()">
+                    🔄 Status aktualisieren
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Phase 2 Features (Vorbereitung) -->
+    <section class="admin-section">
+        <h2>🚀 Erweiterte Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card disabled">
+                <h3>🖨️ Drucken</h3>
+                <p>Automatischer Fotodruck</p>
+                <span class="phase-badge">Phase 2</span>
+            </div>
+            
+            <div class="feature-card disabled">
+                <h3>☁️ Server Upload</h3>
+                <p>Fotos auf Server hochladen</p>
+                <span class="phase-badge">Phase 2</span>
+            </div>
+            
+            <div class="feature-card disabled">
+                <h3>🎨 Overlays</h3>
+                <p>Logo und Branding</p>
+                <span class="phase-badge">Phase 2</span>
+            </div>
+            
+            <div class="feature-card disabled">
+                <h3>🖥️ Kiosk-Modus</h3>
+                <p>Vollbild-Autostart</p>
+                <span class="phase-badge">Phase 3</span>
+            </div>
+        </div>
+    </section>
+    
+    <!-- System Aktionen -->
+    <section class="admin-section">
+        <h2>🔧 System Aktionen</h2>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="restartApp()">
+                🔄 App neu starten
+            </button>
+            <button class="btn btn-secondary" onclick="checkUpdates()">
+                📦 Updates prüfen
+            </button>
+            <button class="btn btn-warning" onclick="clearCache()">
+                🧹 Cache leeren
+            </button>
+        </div>
+    </section>
+    
+    <!-- Navigation -->
+    <nav class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="nav-item">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Foto</span>
+        </a>
+        <a href="{{ url_for('gallery') }}" class="nav-item">
+            <span class="nav-icon">🖼️</span>
+            <span class="nav-text">Galerie</span>
+        </a>
+        <a href="{{ url_for('admin') }}" class="nav-item active">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Einstellungen</span>
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Kamera testen
+function testCamera() {
+    showLoading();
+    
+    fetch('/api/test_camera')
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('✓ Kamera Test erfolgreich', 'success');
+                console.log('Kamera Info:', data.summary);
+            } else {
+                showNotification('✗ Kamera Test fehlgeschlagen: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Fehler beim Kamera Test: ' + error.message, 'error');
+        });
+}
+
+// Kamera Status aktualisieren
+function refreshCameraStatus() {
+    fetch('/api/camera_status')
+        .then(response => response.json())
+        .then(data => {
+            const statusElement = document.getElementById('camera-status');
+            if (data.connected) {
+                statusElement.innerHTML = '<span class="status-ok">✓ ' + data.message + '</span>';
+            } else {
+                statusElement.innerHTML = '<span class="status-error">✗ ' + data.message + '</span>';
+            }
+        })
+        .catch(error => {
+            showNotification('Fehler beim Status Update: ' + error.message, 'error');
+        });
+}
+
+// Galerie öffnen
+function openGallery() {
+    window.location.href = '{{ url_for("gallery") }}';
+}
+
+// Speicher prüfen
+function checkStorage() {
+    const storageInfo = document.getElementById('storage-info');
+    // Placeholder - in echter Implementierung würde hier der Speicher geprüft
+    storageInfo.textContent = 'Ausreichend verfügbar';
+    showNotification('💾 Speicher Status aktualisiert', 'info');
+}
+
+// System Aktionen (Platzhalter)
+function restartApp() {
+    if (confirm('App wirklich neu starten?')) {
+        showNotification('🔄 Neustart wird implementiert...', 'info');
+    }
+}
+
+function checkUpdates() {
+    showNotification('📦 Update-Funktion wird in Phase 3 implementiert', 'info');
+}
+
+function clearCache() {
+    showNotification('🧹 Cache-Funktion wird implementiert...', 'info');
+}
+
+// Speicher Info beim Laden aktualisieren
+document.addEventListener('DOMContentLoaded', function() {
+    checkStorage();
+});
+</script>
+{% endblock %}

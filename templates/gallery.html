@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Galerie - Alle Fotos{% endblock %}
+
+{% block content %}
+<div class="gallery-page">
+    <!-- Header -->
+    <header class="header">
+        <h1>🖼️ Foto-Galerie</h1>
+        <div class="gallery-stats">
+            <span class="photo-count">{{ photos|length }} Fotos insgesamt</span>
+        </div>
+    </header>
+    
+    <!-- Foto-Grid -->
+    {% if photos %}
+    <div class="gallery-grid">
+        {% for photo in photos %}
+        <div class="gallery-item" onclick="showPhotoModal('{{ photo.url }}', '{{ photo.filename }}')">
+            <img src="{{ photo.url }}" alt="Foto {{ photo.filename }}" loading="lazy">
+            <div class="gallery-overlay">
+                <div class="photo-details">
+                    <p class="photo-date">{{ photo.created|datetime }}</p>
+                    <p class="photo-size">{{ photo.size|filesize }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-gallery">
+        <div class="empty-content">
+            <span class="empty-icon">📷</span>
+            <h2>Noch keine Fotos</h2>
+            <p>Gehe zurück zur Hauptseite und nimm dein erstes Foto auf!</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                📸 Erstes Foto aufnehmen
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Navigation -->
+    <nav class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="nav-item">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Foto</span>
+        </a>
+        <a href="{{ url_for('gallery') }}" class="nav-item active">
+            <span class="nav-icon">🖼️</span>
+            <span class="nav-text">Galerie</span>
+        </a>
+        <a href="{{ url_for('admin') }}" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Einstellungen</span>
+        </a>
+    </nav>
+</div>
+
+<!-- Foto Modal -->
+<div id="photoModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closePhotoModal()">&times;</span>
+        <img id="modalImage" src="" alt="Foto">
+        <div class="modal-info">
+            <p id="modalFilename"></p>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="printPhoto()">🖨️ Drucken</button>
+            <button class="btn btn-secondary" onclick="sharePhoto()">📤 Teilen</button>
+            <button class="btn btn-danger" onclick="deletePhoto()">🗑️ Löschen</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Foto Modal Funktionen
+function showPhotoModal(url, filename) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('modalFilename').textContent = filename;
+    document.getElementById('photoModal').style.display = 'block';
+}
+
+function closePhotoModal() {
+    document.getElementById('photoModal').style.display = 'none';
+}
+
+// Platzhalter für zukünftige Features
+function printPhoto() {
+    showNotification('🖨️ Drucken wird in Phase 2 implementiert', 'info');
+}
+
+function sharePhoto() {
+    showNotification('📤 Upload wird in Phase 2 implementiert', 'info');
+}
+
+function deletePhoto() {
+    if (confirm('Foto wirklich löschen?')) {
+        showNotification('🗑️ Löschen wird in einer späteren Version implementiert', 'info');
+    }
+}
+
+// Modal schließen bei Klick außerhalb
+window.onclick = function(event) {
+    const modal = document.getElementById('photoModal');
+    if (event.target == modal) {
+        closePhotoModal();
+    }
+}
+</script>
+{% endblock %}
