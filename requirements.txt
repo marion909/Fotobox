@@ -1,3 +1,7 @@
 flask==3.0.0
 pillow==10.4.0
 requests==2.32.3
+
+# Phase 2 Dependencies
+paramiko==3.3.1  # For SFTP upload
+dataclasses-json==0.6.2  # For configuration management

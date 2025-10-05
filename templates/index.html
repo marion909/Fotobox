@@ -138,13 +138,60 @@ function closePhotoModal() {
     document.getElementById('photoModal').style.display = 'none';
 }
 
-// Platzhalter für zukünftige Features
+// Phase 2 Features
 function printPhoto() {
-    showNotification('🖨️ Drucken wird in Phase 2 implementiert', 'info');
+    const modalImage = document.getElementById('modalImage');
+    const filename = modalImage.src.split('/').pop();
+    
+    showLoading();
+    
+    fetch(`/api/print_photo/${filename}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ copies: 1 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('🖨️ Foto wird gedruckt...', 'success');
+        } else {
+            showNotification('❌ Druck fehlgeschlagen: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('❌ Druck-Fehler: ' + error.message, 'error');
+    });
 }
 
 function sharePhoto() {
-    showNotification('📤 Upload wird in Phase 2 implementiert', 'info');
+    const modalImage = document.getElementById('modalImage');
+    const filename = modalImage.src.split('/').pop();
+    
+    showLoading();
+    
+    fetch(`/api/upload_photo/${filename}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'manual_share' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('📤 Foto erfolgreich hochgeladen!', 'success');
+            if (data.url) {
+                console.log('Upload URL:', data.url);
+            }
+        } else {
+            showNotification('❌ Upload fehlgeschlagen: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('❌ Upload-Fehler: ' + error.message, 'error');
+    });
 }
 
 // Schließe Modal bei Klick außerhalb

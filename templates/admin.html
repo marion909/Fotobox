@@ -64,32 +64,124 @@
         </div>
     </section>
     
-    <!-- Phase 2 Features (Vorbereitung) -->
+    <!-- Phase 2 Features -->
     <section class="admin-section">
-        <h2>🚀 Erweiterte Features</h2>
-        <div class="feature-grid">
-            <div class="feature-card disabled">
-                <h3>🖨️ Drucken</h3>
-                <p>Automatischer Fotodruck</p>
-                <span class="phase-badge">Phase 2</span>
+        <h2>🚀 Erweiterte Features (Phase 2)</h2>
+        
+        <!-- Overlay-Einstellungen -->
+        <div class="feature-section">
+            <h3>🎨 Overlay & Branding</h3>
+            <div class="feature-controls">
+                <div class="toggle-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="overlay-enabled" onchange="toggleOverlay()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Overlays aktivieren</span>
+                </div>
+                
+                <div class="overlay-options" id="overlay-options" style="display: none;">
+                    <div class="form-group">
+                        <label>Text-Overlay:</label>
+                        <input type="text" id="overlay-text" placeholder="z.B. Photobox {date}" 
+                               onchange="updateOverlayText()">
+                        <small>Verwende {date}, {time}, {datetime} für automatische Werte</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="uploadLogo()">Logo hochladen</button>
+                        <button class="btn btn-secondary" onclick="testOverlay()">Overlay testen</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="feature-card disabled">
-                <h3>☁️ Server Upload</h3>
-                <p>Fotos auf Server hochladen</p>
-                <span class="phase-badge">Phase 2</span>
+        </div>
+        
+        <!-- Druck-Einstellungen -->
+        <div class="feature-section">
+            <h3>🖨️ Automatisches Drucken</h3>
+            <div class="feature-controls">
+                <div class="toggle-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="print-enabled" onchange="togglePrint()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Drucken aktivieren</span>
+                </div>
+                
+                <div class="print-options" id="print-options" style="display: none;">
+                    <div class="form-group">
+                        <label>Drucker:</label>
+                        <select id="printer-select" onchange="updatePrinter()">
+                            <option value="">Drucker wählen...</option>
+                        </select>
+                        <button class="btn btn-small" onclick="refreshPrinters()">🔄</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-print" onchange="toggleAutoPrint()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Automatisch drucken nach Foto</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="testPrinter()">Drucker testen</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="feature-card disabled">
-                <h3>🎨 Overlays</h3>
-                <p>Logo und Branding</p>
-                <span class="phase-badge">Phase 2</span>
+        </div>
+        
+        <!-- Upload-Einstellungen -->
+        <div class="feature-section">
+            <h3>☁️ Server Upload</h3>
+            <div class="feature-controls">
+                <div class="toggle-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="upload-enabled" onchange="toggleUpload()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Upload aktivieren</span>
+                </div>
+                
+                <div class="upload-options" id="upload-options" style="display: none;">
+                    <div class="form-group">
+                        <label>Upload-Methode:</label>
+                        <select id="upload-method" onchange="updateUploadMethod()">
+                            <option value="http">HTTP POST</option>
+                            <option value="sftp">SFTP</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="http-config">
+                        <label>HTTP Endpoint:</label>
+                        <input type="url" id="http-endpoint" placeholder="https://server.com/upload" 
+                               onchange="updateHttpEndpoint()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-upload" onchange="toggleAutoUpload()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Automatisch hochladen nach Foto</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="testUpload()">Verbindung testen</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="feature-card disabled">
-                <h3>🖥️ Kiosk-Modus</h3>
-                <p>Vollbild-Autostart</p>
-                <span class="phase-badge">Phase 3</span>
+        </div>
+        
+        <!-- Phase 3 Vorbereitung -->
+        <div class="feature-section">
+            <h3>🖥️ Kiosk-Modus</h3>
+            <div class="feature-controls">
+                <div class="feature-card disabled">
+                    <p>Vollbild-Autostart</p>
+                    <span class="phase-badge">Phase 3</span>
+                </div>
             </div>
         </div>
     </section>
@@ -196,9 +288,207 @@ function clearCache() {
     showNotification('🧹 Cache-Funktion wird implementiert...', 'info');
 }
 
+// Phase 2 JavaScript-Funktionen
+
+// Overlay-Funktionen
+function toggleOverlay() {
+    const enabled = document.getElementById('overlay-enabled').checked;
+    document.getElementById('overlay-options').style.display = enabled ? 'block' : 'none';
+    updateConfig('overlay.enabled', enabled);
+}
+
+function updateOverlayText() {
+    const text = document.getElementById('overlay-text').value;
+    updateConfig('overlay.text_content', text);
+    updateConfig('overlay.text_enabled', text.length > 0);
+}
+
+function uploadLogo() {
+    showNotification('📁 Logo-Upload wird in Phase 3 implementiert', 'info');
+}
+
+function testOverlay() {
+    showNotification('🎨 Overlay-Test wird implementiert', 'info');
+}
+
+// Druck-Funktionen
+function togglePrint() {
+    const enabled = document.getElementById('print-enabled').checked;
+    document.getElementById('print-options').style.display = enabled ? 'block' : 'none';
+    updateConfig('printing.enabled', enabled);
+    
+    if (enabled) {
+        refreshPrinters();
+    }
+}
+
+function toggleAutoPrint() {
+    const enabled = document.getElementById('auto-print').checked;
+    updateConfig('printing.auto_print', enabled);
+}
+
+function updatePrinter() {
+    const printerName = document.getElementById('printer-select').value;
+    updateConfig('printing.printer_name', printerName);
+}
+
+function refreshPrinters() {
+    fetch('/api/printers')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('printer-select');
+            select.innerHTML = '<option value="">Drucker wählen...</option>';
+            
+            if (data.success && data.printers) {
+                data.printers.forEach(printer => {
+                    const option = document.createElement('option');
+                    option.value = printer.name;
+                    option.textContent = `${printer.name} (${printer.status})`;
+                    select.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            showNotification('Fehler beim Laden der Drucker: ' + error.message, 'error');
+        });
+}
+
+function testPrinter() {
+    showLoading();
+    
+    fetch('/api/test_printer', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('✓ Drucker-Test erfolgreich', 'success');
+            } else {
+                showNotification('✗ Drucker-Test fehlgeschlagen: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Fehler beim Drucker-Test: ' + error.message, 'error');
+        });
+}
+
+// Upload-Funktionen
+function toggleUpload() {
+    const enabled = document.getElementById('upload-enabled').checked;
+    document.getElementById('upload-options').style.display = enabled ? 'block' : 'none';
+    updateConfig('upload.enabled', enabled);
+}
+
+function toggleAutoUpload() {
+    const enabled = document.getElementById('auto-upload').checked;
+    updateConfig('upload.auto_upload', enabled);
+}
+
+function updateUploadMethod() {
+    const method = document.getElementById('upload-method').value;
+    updateConfig('upload.upload_method', method);
+    
+    // Zeige/verstecke entsprechende Konfiguration
+    document.getElementById('http-config').style.display = 
+        method === 'http' ? 'block' : 'none';
+}
+
+function updateHttpEndpoint() {
+    const endpoint = document.getElementById('http-endpoint').value;
+    updateConfig('upload.http_endpoint', endpoint);
+}
+
+function testUpload() {
+    showLoading();
+    
+    fetch('/api/test_upload', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('✓ Upload-Test erfolgreich', 'success');
+            } else {
+                showNotification('✗ Upload-Test fehlgeschlagen: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Fehler beim Upload-Test: ' + error.message, 'error');
+        });
+}
+
+// Konfiguration aktualisieren
+function updateConfig(key, value) {
+    const data = {};
+    data[key] = value;
+    
+    fetch('/api/config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            showNotification('Konfigurationsfehler: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler beim Speichern: ' + error.message, 'error');
+    });
+}
+
+// Lade aktuelle Konfiguration beim Start
+function loadCurrentConfig() {
+    fetch('/api/config')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const config = data.config;
+                
+                // Overlay-Einstellungen
+                if (document.getElementById('overlay-enabled')) {
+                    document.getElementById('overlay-enabled').checked = config.overlay.enabled;
+                    document.getElementById('overlay-text').value = config.overlay.text_content || '';
+                    document.getElementById('overlay-options').style.display = 
+                        config.overlay.enabled ? 'block' : 'none';
+                }
+                
+                // Druck-Einstellungen  
+                if (document.getElementById('print-enabled')) {
+                    document.getElementById('print-enabled').checked = config.printing.enabled;
+                    document.getElementById('auto-print').checked = config.printing.auto_print;
+                    document.getElementById('print-options').style.display = 
+                        config.printing.enabled ? 'block' : 'none';
+                        
+                    if (config.printing.enabled) {
+                        refreshPrinters();
+                    }
+                }
+                
+                // Upload-Einstellungen
+                if (document.getElementById('upload-enabled')) {
+                    document.getElementById('upload-enabled').checked = config.upload.enabled;
+                    document.getElementById('auto-upload').checked = config.upload.auto_upload;
+                    document.getElementById('upload-method').value = config.upload.upload_method;
+                    document.getElementById('upload-options').style.display = 
+                        config.upload.enabled ? 'block' : 'none';
+                    
+                    updateUploadMethod();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Konfiguration:', error);
+        });
+}
+
 // Speicher Info beim Laden aktualisieren
 document.addEventListener('DOMContentLoaded', function() {
     checkStorage();
+    loadCurrentConfig();
 });
 </script>
 {% endblock %}
