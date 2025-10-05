@@ -2,7 +2,7 @@
 
 # Photobox Komplette Installation & Konfiguration  
 # Dieses Script installiert und konfiguriert die gesamte Photobox-Anwendung
-# Version: 4.1.0-fixed
+# Version: 4.1.0-fixed-cache-clear
 
 set -e  # Exit bei Fehlern
 
