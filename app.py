@@ -18,6 +18,7 @@ from config import get_config, save_config, set_setting
 from overlay_manager import OverlayManager
 from print_manager import PrintManager
 from upload_manager import UploadManager
+from camera_manager import camera_manager
 
 app = Flask(__name__)
 app.secret_key = 'photobox_phase2_secret_key_change_in_production'
@@ -32,179 +33,8 @@ overlay_manager = OverlayManager(config)
 print_manager = PrintManager(config)  
 upload_manager = UploadManager(config)
 
-class CameraController:
-    """Kamera-Controller für gphoto2"""
-    
-    def __init__(self):
-        self.camera_detected = False
-        self.check_camera()
-    
-    def check_camera(self):
-        """Prüft, ob Kamera verbunden ist"""
-        try:
-            result = subprocess.run(['gphoto2', '--auto-detect'], 
-                                  capture_output=True, text=True, check=True)
-            self.camera_detected = "Canon" in result.stdout
-            return self.camera_detected
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            self.camera_detected = False
-            return False
-    
-    def take_photo(self, filename=None, apply_overlays=True, auto_print=None, auto_upload=None):
-        """Nimmt ein Foto auf mit robuster Canon EOS Device-Busy-Behandlung"""
-        if not filename:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"photo_{timestamp}.jpg"
-        
-        filepath = os.path.join(config.photo_dir, filename)
-        
-        # Robuste Foto-Aufnahme mit mehreren Versuchen
-        max_attempts = 3
-        for attempt in range(1, max_attempts + 1):
-            try:
-                print(f"📸 Foto-Aufnahme Versuch {attempt}/{max_attempts}...")
-                
-                # Bei wiederholten Versuchen: Kurze Pause und gphoto2-Prozesse beenden
-                if attempt > 1:
-                    print(f"⏳ Warte 2 Sekunden vor Versuch {attempt}...")
-                    time.sleep(2)
-                    # Alte gphoto2-Prozesse beenden die eventuell hängen
-                    subprocess.run(['pkill', '-f', 'gphoto2'], capture_output=True)
-                    time.sleep(1)
-                
-                # Foto aufnehmen mit timeout
-                result = subprocess.run([
-                    'gphoto2', 
-                    '--capture-image-and-download',
-                    '--filename', filepath
-                ], capture_output=True, text=True, check=True, timeout=30)
-                
-                # Prüfe ob Datei wirklich erstellt wurde
-                if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:  # Min. 1KB
-                    print(f"✅ Foto erfolgreich aufgenommen: {filename}")
-                    
-                    response = {
-                        'success': True,
-                        'filename': filename,
-                        'filepath': filepath,
-                        'message': f'Foto erfolgreich aufgenommen! (Versuch {attempt})',
-                        'attempts': attempt,
-                        'overlay_applied': False,
-                        'print_queued': False,
-                        'upload_queued': False
-                    }
-                    
-                    # Phase 2: Overlays anwenden
-                    if apply_overlays and config.overlay.enabled:
-                        try:
-                            overlay_path = overlay_manager.apply_overlays(filepath)
-                            response['overlay_applied'] = True
-                            response['overlay_path'] = overlay_path
-                            response['message'] += ' Overlay angewendet.'
-                        except Exception as e:
-                            print(f"⚠️ Overlay-Fehler: {e}")
-                    
-                    # Phase 2: Automatisches Drucken
-                    if (auto_print or config.printing.auto_print) and config.printing.enabled:
-                        threading.Thread(target=self._async_print, args=(filepath,)).start()
-                        response['print_queued'] = True
-                        response['message'] += ' Druck eingeplant.'
-                    
-                    # Phase 2: Automatischer Upload
-                    if (auto_upload or config.upload.auto_upload) and config.upload.enabled:
-                        threading.Thread(target=self._async_upload, args=(filepath,)).start()
-                        response['upload_queued'] = True  
-                        response['message'] += ' Upload eingeplant.'
-                    
-                    return response
-                else:
-                    raise Exception("Foto-Datei nicht erstellt oder zu klein")
-                    
-            except subprocess.TimeoutExpired:
-                print(f"⏰ Timeout bei Versuch {attempt} - gphoto2 hängt")
-                # Hängende Prozesse beenden
-                subprocess.run(['pkill', '-9', '-f', 'gphoto2'], capture_output=True)
-                if attempt < max_attempts:
-                    continue
-                else:
-                    return {
-                        'success': False,
-                        'message': f'Foto-Aufnahme nach {max_attempts} Versuchen fehlgeschlagen: Timeout'
-                    }
-                    
-            except subprocess.CalledProcessError as e:
-                error_msg = e.stderr.lower() if e.stderr else ""
-                
-                # Spezielle Behandlung für "Device Busy" Fehler
-                if "device busy" in error_msg or "0x2019" in error_msg:
-                    print(f"⚠️ Device Busy Fehler bei Versuch {attempt}")
-                    if attempt < max_attempts:
-                        print("🔄 Führe Camera-Reset durch...")
-                        # Erweiterte Reset-Prozedur
-                        subprocess.run(['pkill', '-f', 'gphoto2'], capture_output=True)
-                        time.sleep(1)
-                        # Versuche USB-Reset (falls Root-Rechte vorhanden)
-                        try:
-                            subprocess.run(['scripts/fix_camera_busy.sh', '--reset'], 
-                                         capture_output=True, timeout=10)
-                        except:
-                            pass  # Falls Script nicht verfügbar
-                        continue
-                    else:
-                        return {
-                            'success': False,
-                            'message': f'Canon EOS Device Busy Fehler - Versuche: scripts/fix_camera_busy.sh --reset'
-                        }
-                else:
-                    print(f"❌ gphoto2 Fehler bei Versuch {attempt}: {e.stderr}")
-                    if attempt < max_attempts:
-                        continue
-                    else:
-                        return {
-                            'success': False,
-                            'message': f'Kamera-Fehler nach {max_attempts} Versuchen: {e.stderr}'
-                        }
-                        
-            except FileNotFoundError:
-                return {
-                    'success': False,
-                    'message': 'gphoto2 nicht installiert oder nicht im PATH'
-                }
-            except Exception as e:
-                print(f"❌ Unerwarteter Fehler bei Versuch {attempt}: {e}")
-                if attempt < max_attempts:
-                    continue
-                else:
-                    return {
-                        'success': False,
-                        'message': f'Unerwarteter Fehler: {str(e)}'
-                    }
-        
-        # Falls alle Versuche fehlschlagen
-        return {
-            'success': False,
-            'message': f'Foto-Aufnahme nach {max_attempts} Versuchen fehlgeschlagen'
-        }
-    
-    def _async_print(self, filepath):
-        """Asynchrones Drucken"""
-        try:
-            time.sleep(1)  # Kurze Verzögerung
-            result = print_manager.print_photo(filepath)
-            print(f"🖨️ Druck-Ergebnis: {result['message']}")
-        except Exception as e:
-            print(f"❌ Druck-Fehler: {e}")
-    
-    def _async_upload(self, filepath):
-        """Asynchroner Upload"""
-        try:
-            time.sleep(2)  # Kurze Verzögerung
-            result = upload_manager.upload_photo(filepath)
-            print(f"☁️ Upload-Ergebnis: {result['message']}")
-        except Exception as e:
-            print(f"❌ Upload-Fehler: {e}")
-
-camera = CameraController()
+# Verwende den importierten camera_manager
+camera = camera_manager
 
 class PhotoManager:
     """Verwaltung der aufgenommenen Fotos"""
@@ -250,6 +80,12 @@ def index():
 @app.route('/api/take_photo', methods=['POST'])
 def api_take_photo():
     """API Endpoint zum Fotografieren"""
+    result = camera.take_photo()
+    return jsonify(result)
+
+@app.route('/capture', methods=['POST'])
+def capture_photo():
+    """Alias für /api/take_photo (Kompatibilität)"""
     result = camera.take_photo()
     return jsonify(result)
 
