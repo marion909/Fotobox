@@ -4,6 +4,42 @@
 # Dieses Script installiert und konfiguriert die gesamte Photobox-Anwendung
 
 set -e  # Exit bei Fehlern
+set -u  # Exit bei undefinierten Variablen
+
+# Konfiguration
+INSTALL_DIR="/home/pi/Photobox"
+SERVICE_USER="pi"
+REPO_URL="https://github.com/marion909/Fotobox.git"
+
+# Farben für Output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m' # No Color
+
+# Funktionen definieren ZUERST
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_step() {
+    echo ""
+    echo -e "${PURPLE}=== $1 ===${NC}"
+}
 
 # Non-Interactive Mode für automatische Installation
 export DEBIAN_FRONTEND=noninteractive
@@ -34,19 +70,6 @@ EOF
 
 print_status "APT non-interactive Konfiguration gesetzt"
 
-# Konfiguration
-INSTALL_DIR="/home/pi/Photobox"
-SERVICE_USER="pi"
-REPO_URL="https://github.com/marion909/Fotobox.git"
-
-# Farben für Output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-NC='\033[0m' # No Color
-
 # Header
 clear
 echo -e "${PURPLE}"
@@ -55,27 +78,6 @@ echo "║                     📸 PHOTOBOX INSTALLER                    ║"
 echo "║              Komplette Installation & Konfiguration          ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
-
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-print_step() {
-    echo ""
-    echo -e "${PURPLE}=== $1 ===${NC}"
-}
 
 # Root-Check
 if [ "$EUID" -ne 0 ]; then
