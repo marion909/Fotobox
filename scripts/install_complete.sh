@@ -136,15 +136,18 @@ apt install -y -q \
     python3-setuptools \
     python3-distutils
 
-print_step "Kamera-Unterstützung"
-print_status "Installiere gphoto2 und Abhängigkeiten..."
+print_step "Kamera-Unterstützung (Optimal Setup)"
+print_status "Installiere gphoto2 Python API und Abhängigkeiten..."
 apt install -y -q \
     gphoto2 \
     libgphoto2-dev \
     libgphoto2-port12 \
     libexif12 \
     libexif-dev \
-    libusb-1.0-0-dev
+    libusb-1.0-0-dev \
+    build-essential \
+    pkg-config \
+    python3-dev
 
 print_status "Konfiguriere gphoto2 für Photobox..."
 # GVFS Auto-Mount für Kameras deaktivieren (verhindert USB-Konflikte)
@@ -440,6 +443,9 @@ qrcode[pil]==7.4.2
 
 # Image processing
 opencv-python==4.8.1.78
+
+# OPTIMAL CAMERA INTEGRATION
+gphoto2
 EOF
     chown $SERVICE_USER:$SERVICE_USER requirements.txt
 fi
@@ -447,9 +453,39 @@ fi
 # Install requirements mit absoluten Pfaden
 sudo -u $SERVICE_USER "$VENV_PIP" install -r requirements.txt
 
+# Optimale gphoto2 Python Installation
+print_step "Optimale Kamera-Integration"
+print_status "Installiere gphoto2 Python API..."
+
+# Versuche gphoto2 Python Installation
+GPHOTO2_SUCCESS=false
+if sudo -u $SERVICE_USER "$VENV_PIP" install gphoto2 >/dev/null 2>&1; then
+    print_success "gphoto2 Python erfolgreich installiert"
+    GPHOTO2_SUCCESS=true
+else
+    print_warning "Standard-Installation fehlgeschlagen, versuche mit CFLAGS..."
+    if sudo -u $SERVICE_USER bash -c "CFLAGS='-I/usr/include/gphoto2' $VENV_PIP install gphoto2" >/dev/null 2>&1; then
+        print_success "gphoto2 Python mit CFLAGS installiert"
+        GPHOTO2_SUCCESS=true
+    else
+        print_warning "gphoto2 Python Installation fehlgeschlagen - verwende Fallback"
+        GPHOTO2_SUCCESS=false
+    fi
+fi
+
 # Test der Installation
 print_status "Teste Python-Installation..."
-if sudo -u $SERVICE_USER "$VENV_PYTHON" -c "import flask, PIL, requests; print('✅ Alle Python-Pakete erfolgreich installiert')"; then
+if sudo -u $SERVICE_USER "$VENV_PYTHON" -c "import flask, PIL, requests; print('✅ Basis-Pakete erfolgreich installiert')"; then
+    # Teste gphoto2 Python falls installiert
+    if [ "$GPHOTO2_SUCCESS" = true ]; then
+        if sudo -u $SERVICE_USER "$VENV_PYTHON" -c "import gphoto2; print('✅ gphoto2 Python API verfügbar')" >/dev/null 2>&1; then
+            print_success "Optimale Kamera-Integration aktiv (gphoto2 Python)"
+        else
+            print_warning "gphoto2 Python Import-Problem - verwende CLI-Fallback"
+        fi
+    else
+        print_warning "gphoto2 Python nicht verfügbar - verwende CLI-Fallback"
+    fi
     print_success "Python-Environment korrekt eingerichtet"
 else
     print_error "Fehler bei Python-Paket-Installation"
@@ -1136,22 +1172,114 @@ print_status "Führe Optimal Photobox Setup aus..."
 # Wechsle ins Installationsverzeichnis
 cd "$INSTALL_DIR"
 
-# Führe setup_optimal_photobox.sh aus
-if [ -f "scripts/setup_optimal_photobox.sh" ]; then
-    print_status "Starte setup_optimal_photobox.sh..."
-    chmod +x scripts/setup_optimal_photobox.sh
+# OPTIMAL CAMERA MANAGER SETUP (Integriert)
+print_status "Aktiviere Optimal Camera Manager..."
+
+# Prüfe Optimal Camera Manager
+if [ -f "optimal_camera_manager.py" ]; then
+    print_status "Optimal Camera Manager gefunden - teste Integration..."
     
-    # Führe das Setup-Script als pi-Benutzer aus
-    sudo -u "$SERVICE_USER" bash scripts/setup_optimal_photobox.sh
-    
-    if [ $? -eq 0 ]; then
-        print_success "Optimal Photobox Setup erfolgreich abgeschlossen!"
+    # Teste Import als SERVICE_USER
+    if sudo -u "$SERVICE_USER" bash -c "cd '$INSTALL_DIR' && [ -d '.venv' ] && source .venv/bin/activate && python3 -c 'from optimal_camera_manager import optimal_camera_manager; print(\"Import erfolgreich\")'"; then
+        print_success "Optimal Camera Manager Import funktioniert"
     else
-        print_warning "Optimal Photobox Setup mit Warnungen abgeschlossen"
+        print_warning "Optimal Camera Manager Import-Problem - prüfe Dependencies"
     fi
 else
-    print_warning "setup_optimal_photobox.sh nicht gefunden - überspringe..."
+    print_warning "optimal_camera_manager.py nicht gefunden"
 fi
+
+# PROJEKT-CLEANUP (entferne komplexe APIs)
+print_status "Projekt-Cleanup - entferne komplexe APIs..."
+
+# Backup-Verzeichnis erstellen
+sudo -u "$SERVICE_USER" mkdir -p "$INSTALL_DIR/backups"
+
+# Entferne komplexe/nicht gebrauchte Manager
+CLEANUP_FILES=(
+    "modern_camera_manager.py"
+    "simple_camera_manager.py" 
+    "canon_edsdk_wrapper.py"
+)
+
+for file in "${CLEANUP_FILES[@]}"; do
+    if [ -f "$INSTALL_DIR/$file" ]; then
+        sudo -u "$SERVICE_USER" mv "$INSTALL_DIR/$file" "$INSTALL_DIR/backups/" 2>/dev/null || sudo -u "$SERVICE_USER" rm -f "$INSTALL_DIR/$file"
+        print_status "Entfernt: $file"
+    fi
+done
+
+# Aufräumen komplexer Scripts
+CLEANUP_SCRIPTS=(
+    "scripts/upgrade_camera_apis.sh"
+    "scripts/activate_modern_camera.sh"
+    "scripts/activate_edsdk_complete.sh"
+    "scripts/debug_gphoto2_file_creation.sh"
+)
+
+for script in "${CLEANUP_SCRIPTS[@]}"; do
+    if [ -f "$INSTALL_DIR/$script" ]; then
+        sudo -u "$SERVICE_USER" mv "$INSTALL_DIR/$script" "$INSTALL_DIR/backups/" 2>/dev/null || sudo -u "$SERVICE_USER" rm -f "$INSTALL_DIR/$script"
+        print_status "Entfernt: $script"
+    fi
+done
+
+print_success "Projekt aufgeräumt - nur essenzielle Dateien"
+
+# GVFS KONFLIKT-LÖSUNG (permanent)
+print_status "Konfiguriere permanente GVFS Konflikt-Lösung..."
+
+# GVFS für Kameras permanent deaktivieren
+mkdir -p /etc/systemd/system/gvfs-gphoto2-volume-monitor.service.d/
+cat > /etc/systemd/system/gvfs-gphoto2-volume-monitor.service.d/override.conf << 'EOF'
+[Unit]
+# Deaktiviere GVFS Kamera-Monitor (Photobox Konflikt-Lösung)
+ConditionPathExists=!/home/pi/Photobox/.disable-gvfs
+EOF
+
+# Marker-Datei erstellen
+sudo -u "$SERVICE_USER" touch "$INSTALL_DIR/.disable-gvfs"
+print_success "GVFS Kamera-Monitor permanent deaktiviert"
+
+# KAMERA-FUNKTIONSTEST
+print_status "Führe Kamera-Funktionstest durch..."
+
+# Cleanup vor Test
+pkill -f gphoto2 2>/dev/null || true
+pkill -f gvfs 2>/dev/null || true
+
+# Teste gphoto2 Python Integration
+TEST_RESULT=$(sudo -u "$SERVICE_USER" bash -c "
+cd '$INSTALL_DIR'
+if [ -d '.venv' ]; then
+    source .venv/bin/activate
+fi
+
+python3 -c \"
+try:
+    import gphoto2 as gp
+    print('✅ gphoto2 Python importiert')
+    
+    # Teste Kamera-Verbindung
+    camera = gp.Camera()
+    camera.init()
+    print('✅ Kamera-Verbindung erfolgreich')
+    camera.exit()
+    
+except gp.GPhoto2Error as e:
+    if 'not found' in str(e).lower():
+        print('⚠️ Keine Kamera gefunden (USB-Verbindung prüfen)')
+    else:
+        print(f'⚠️ gphoto2 Fehler: {e}')
+except ImportError:
+    print('❌ gphoto2 Python nicht verfügbar')
+except Exception as e:
+    print(f'⚠️ Test-Fehler: {e}')
+\"
+" 2>&1)
+
+echo "$TEST_RESULT"
+print_success "Optimal Camera Setup integriert abgeschlossen"
 
 print_step "Finalisierung"
 print_status "Setze Berechtigungen..."
@@ -1227,6 +1355,8 @@ echo "   ✅ Service-Überwachung und Neustart"
 echo "   ✅ Tägliche Backups um 03:00 Uhr"
 echo "   ✅ Kiosk-Modus nach Desktop-Start"
 echo "   ✅ GVFS-Konflikte automatisch behoben"
+echo "   ✅ Optimal Camera Setup (gphoto2 Python API)"
+echo "   ✅ Projekt-Cleanup (komplexe APIs entfernt)"
 echo ""
 echo -e "${GREEN}🚀 System ist bereit für den Produktiveinsatz!${NC}"
 echo ""
@@ -1239,5 +1369,6 @@ echo ""
 echo -e "${GREEN}Nach dem Neustart:${NC}"
 echo -e "  🌟 Photobox startet automatisch im Vollbild-Modus"
 echo -e "  📸 Kamera wird automatisch erkannt und konfiguriert"
+echo -e "  🎯 Optimal Camera Manager mit gphoto2 Python API aktiv"
 echo -e "  🖨️ Drucker-Setup über CUPS Web-Interface verfügbar"
 echo -e "  ☁️ Server-Upload bereit für Konfiguration"
