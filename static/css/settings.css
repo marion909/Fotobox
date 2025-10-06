@@ -540,3 +540,19 @@ input:checked + .slider:before {
         justify-content: center;
     }
 }
+
+/* Input Group für API-Key Generator */
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group input {
+    flex: 1;
+}
+
+.input-group .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

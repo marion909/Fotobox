@@ -19,6 +19,7 @@ from overlay_manager import OverlayManager
 from print_manager import PrintManager
 from upload_manager import UploadManager
 from optimal_camera_manager import optimal_camera_manager
+from php_config_manager import php_config_manager
 
 app = Flask(__name__)
 app.secret_key = 'fotobox_phase2_secret_key_change_in_production'
@@ -161,10 +162,17 @@ def gallery():
 @app.route('/admin')
 def admin():
     """Admin-Panel mit Konfiguration"""
+    try:
+        server_config = php_config_manager.get_server_config_for_admin()
+    except Exception as e:
+        print(f"Fehler beim Laden der Server-Konfiguration: {e}")
+        server_config = {}
+    
     return render_template('admin.html', 
                          camera_connected=camera.camera_detected,
                          photo_count=PhotoManager.get_photo_count(),
-                         config=config)
+                         config=config,
+                         server_config=server_config)
 
 @app.route('/api/test_camera')
 def api_test_camera():
@@ -619,6 +627,135 @@ def api_clear_photos():
         return jsonify({
             'success': True,
             'message': f'{deleted_count} Fotos gelöscht'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        })
+
+# Server-Konfiguration API Endpoints
+
+@app.route('/api/server_config')
+def api_get_server_config():
+    """Holt die aktuelle Server-Upload-Konfiguration"""
+    try:
+        server_config = php_config_manager.get_server_config_for_admin()
+        return jsonify({
+            'success': True,
+            'config': server_config
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        })
+
+@app.route('/api/server_config', methods=['POST'])
+def api_update_server_config():
+    """Aktualisiert die Server-Upload-Konfiguration"""
+    try:
+        data = request.get_json()
+        
+        # Validierung der Eingabedaten
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'Keine Daten empfangen'
+            })
+        
+        # Server-Konfiguration aktualisieren
+        success = php_config_manager.update_server_config_from_admin(data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Server-Konfiguration erfolgreich gespeichert'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Fehler beim Speichern der Server-Konfiguration'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        })
+
+@app.route('/api/test_server_config', methods=['POST'])
+def api_test_server_config():
+    """Testet die Server-Upload-Verbindung"""
+    try:
+        data = request.get_json()
+        
+        # Basis-URL und API-Key aus den Daten extrahieren
+        base_url = data.get('base_url', '').strip()
+        api_key = data.get('api_key', '').strip()
+        
+        if not base_url:
+            return jsonify({
+                'success': False,
+                'message': 'Keine Server-URL angegeben'
+            })
+        
+        # Test-Request an den Server
+        import requests
+        
+        # Upload-Endpoint zusammensetzen
+        if not base_url.endswith('/'):
+            base_url += '/'
+        upload_url = base_url + 'upload.php'
+        
+        headers = {}
+        if api_key:
+            headers['X-API-Key'] = api_key
+        
+        # Test-Request (HEAD Request um nur Verbindung zu prüfen)
+        response = requests.head(upload_url, headers=headers, timeout=10)
+        
+        if response.status_code in [200, 405]:  # 405 ist OK für HEAD auf POST-Endpoint
+            return jsonify({
+                'success': True,
+                'message': f'Verbindung erfolgreich (Status: {response.status_code})'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': f'Server-Fehler: HTTP {response.status_code}'
+            })
+            
+    except requests.exceptions.Timeout:
+        return jsonify({
+            'success': False,
+            'message': 'Verbindungs-Timeout - Server nicht erreichbar'
+        })
+    except requests.exceptions.ConnectionError:
+        return jsonify({
+            'success': False,
+            'message': 'Verbindungsfehler - Server nicht erreichbar'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Unbekannter Fehler: {str(e)}'
+        })
+
+@app.route('/api/generate_api_key', methods=['POST'])
+def api_generate_api_key():
+    """Generiert einen neuen sicheren API-Schlüssel"""
+    try:
+        import secrets
+        import string
+        
+        # 64 Zeichen langer sicherer API-Key
+        alphabet = string.ascii_letters + string.digits
+        api_key = ''.join(secrets.choice(alphabet) for _ in range(64))
+        
+        return jsonify({
+            'success': True,
+            'api_key': api_key
         })
     except Exception as e:
         return jsonify({

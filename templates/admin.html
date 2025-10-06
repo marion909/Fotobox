@@ -377,6 +377,114 @@
                     <button class="btn btn-secondary" onclick="testUpload()">Verbindung testen</button>
                 </div>
             </div>
+
+            <div class="setting-card">
+                <h3>⚙️ Server-Konfiguration</h3>
+                <div class="setting-group">
+                    <div class="toggle-setting">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="server-upload-enabled" 
+                                   {% if server_config.server_upload_enabled %}checked{% endif %}
+                                   onchange="updateServerConfig('server_upload_enabled', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Server-Upload aktivieren</span>
+                    </div>
+                    
+                    <div class="input-setting">
+                        <label>Server-URL</label>
+                        <input type="url" id="server-base-url" 
+                               value="{{ server_config.base_url or '' }}"
+                               placeholder="https://upload.example.com"
+                               onchange="updateServerConfig('base_url', this.value)">
+                    </div>
+                    
+                    <div class="input-setting">
+                        <label>API-Schlüssel</label>
+                        <div class="input-group">
+                            <input type="text" id="server-api-key" 
+                                   value="{{ server_config.api_key or '' }}"
+                                   placeholder="Sicherer API-Schlüssel"
+                                   onchange="updateServerConfig('api_key', this.value)">
+                            <button class="btn btn-small" onclick="generateApiKey()">Generieren</button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-setting">
+                        <label>Max. Dateigröße (MB)</label>
+                        <input type="number" id="server-max-file-size" 
+                               value="{{ server_config.max_file_size_mb or 10 }}"
+                               min="1" max="100"
+                               onchange="updateServerConfig('max_file_size_mb', this.value)">
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="testServerConnection()">Verbindung testen</button>
+                    <button class="btn btn-primary" onclick="saveServerConfig()">Speichern</button>
+                </div>
+            </div>
+
+            <div class="setting-card">
+                <h3>🖼️ Server-Features</h3>
+                <div class="setting-group">
+                    <div class="toggle-setting">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="server-thumbnails" 
+                                   {% if server_config.create_thumbnails %}checked{% endif %}
+                                   onchange="updateServerConfig('create_thumbnails', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Thumbnails erstellen</span>
+                    </div>
+                    
+                    <div class="toggle-setting">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="server-gallery" 
+                                   {% if server_config.enable_gallery %}checked{% endif %}
+                                   onchange="updateServerConfig('enable_gallery', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Öffentliche Galerie</span>
+                    </div>
+                    
+                    <div class="toggle-setting">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="server-statistics" 
+                                   {% if server_config.enable_statistics %}checked{% endif %}
+                                   onchange="updateServerConfig('enable_statistics', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Statistiken aktivieren</span>
+                    </div>
+                    
+                    <div class="toggle-setting">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="server-watermark" 
+                                   {% if server_config.add_watermark %}checked{% endif %}
+                                   onchange="updateServerConfig('add_watermark', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Wasserzeichen hinzufügen</span>
+                    </div>
+                    
+                    <div class="input-setting">
+                        <label>Thumbnail-Größe (px)</label>
+                        <input type="number" id="server-thumbnail-size" 
+                               value="{{ server_config.thumbnail_size or 200 }}"
+                               min="50" max="500"
+                               onchange="updateServerConfig('thumbnail_size', this.value)">
+                    </div>
+                    
+                    <div class="input-setting">
+                        <label>Wasserzeichen-Text</label>
+                        <input type="text" id="server-watermark-text" 
+                               value="{{ server_config.watermark_text or '' }}"
+                               placeholder="© Fotobox 2025"
+                               onchange="updateServerConfig('watermark_text', this.value)">
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -693,6 +801,146 @@ function clearAllPhotos() {
             });
     }
 }
+
+// Server-Konfiguration Funktionen
+let serverConfigChanges = {};
+
+function updateServerConfig(key, value) {
+    serverConfigChanges[key] = value;
+    
+    // Visuelles Feedback für ungespeicherte Änderungen
+    const saveBtn = document.querySelector('button[onclick="saveServerConfig()"]');
+    if (saveBtn) {
+        saveBtn.textContent = 'Speichern*';
+        saveBtn.classList.add('btn-warning');
+        saveBtn.classList.remove('btn-primary');
+    }
+}
+
+function saveServerConfig() {
+    if (Object.keys(serverConfigChanges).length === 0) {
+        showNotification('Keine Änderungen zum Speichern', 'info');
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/api/server_config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(serverConfigChanges)
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('Server-Konfiguration gespeichert', 'success');
+            serverConfigChanges = {};
+            
+            // Button zurücksetzen
+            const saveBtn = document.querySelector('button[onclick="saveServerConfig()"]');
+            if (saveBtn) {
+                saveBtn.textContent = 'Speichern';
+                saveBtn.classList.remove('btn-warning');
+                saveBtn.classList.add('btn-primary');
+            }
+        } else {
+            showNotification('Fehler: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Netzwerk-Fehler: ' + error.message, 'error');
+    });
+}
+
+function testServerConnection() {
+    const baseUrl = document.getElementById('server-base-url').value;
+    const apiKey = document.getElementById('server-api-key').value;
+    
+    if (!baseUrl) {
+        showNotification('Bitte Server-URL eingeben', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/api/test_server_config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            base_url: baseUrl,
+            api_key: apiKey
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showNotification('✓ ' + data.message, 'success');
+        } else {
+            showNotification('✗ ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Test-Fehler: ' + error.message, 'error');
+    });
+}
+
+function generateApiKey() {
+    fetch('/api/generate_api_key', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const apiKeyInput = document.getElementById('server-api-key');
+            apiKeyInput.value = data.api_key;
+            updateServerConfig('api_key', data.api_key);
+            showNotification('Neuer API-Schlüssel generiert', 'success');
+        } else {
+            showNotification('Fehler beim Generieren: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler: ' + error.message, 'error');
+    });
+}
+
+function loadServerConfig() {
+    fetch('/api/server_config')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const config = data.config;
+            
+            // Formularfelder mit aktuellen Werten füllen
+            document.getElementById('server-upload-enabled').checked = config.server_upload_enabled || false;
+            document.getElementById('server-base-url').value = config.base_url || '';
+            document.getElementById('server-api-key').value = config.api_key || '';
+            document.getElementById('server-max-file-size').value = config.max_file_size_mb || 10;
+            document.getElementById('server-thumbnails').checked = config.create_thumbnails || false;
+            document.getElementById('server-gallery').checked = config.enable_gallery || false;
+            document.getElementById('server-statistics').checked = config.enable_statistics || false;
+            document.getElementById('server-watermark').checked = config.add_watermark || false;
+            document.getElementById('server-thumbnail-size').value = config.thumbnail_size || 200;
+            document.getElementById('server-watermark-text').value = config.watermark_text || '';
+        }
+    })
+    .catch(error => {
+        console.error('Fehler beim Laden der Server-Konfiguration:', error);
+    });
+}
+
+// Server-Konfiguration beim Laden der Seite aktualisieren
+document.addEventListener('DOMContentLoaded', function() {
+    loadServerConfig();
+});
 
 // Notification System
 function showNotification(message, type = 'info') {
