@@ -438,6 +438,24 @@ class OptimalCameraManager:
                     file_size = os.path.getsize(filepath)
                     print(f"✅ Foto erfolgreich: {filename} ({file_size} Bytes)")
                     
+                    # Auto-Upload wenn aktiviert
+                    upload_result = None
+                    if self.config.upload.enabled and self.config.upload.auto_upload:
+                        print("☁️ Auto-Upload aktiviert - lade Foto hoch...")
+                        try:
+                            # Import hier um zirkuläre Abhängigkeiten zu vermeiden
+                            from upload_manager import UploadManager
+                            upload_manager = UploadManager(self.config)
+                            upload_result = upload_manager.upload_photo(filepath)
+                            
+                            if upload_result['success']:
+                                print(f"✅ Auto-Upload erfolgreich: {upload_result['message']}")
+                            else:
+                                print(f"❌ Auto-Upload fehlgeschlagen: {upload_result['message']}")
+                        except Exception as e:
+                            print(f"❌ Auto-Upload Fehler: {str(e)}")
+                            upload_result = {'success': False, 'message': str(e)}
+                    
                     return {
                         'success': True,
                         'filename': filename,
@@ -445,7 +463,8 @@ class OptimalCameraManager:
                         'message': f'Foto erfolgreich aufgenommen! (gphoto2 Python, Versuch {attempt})',
                         'attempts': attempt,
                         'api': 'gphoto2_python',
-                        'filesize': file_size
+                        'filesize': file_size,
+                        'upload_result': upload_result
                     }
                 else:
                     raise Exception("Foto-Datei nicht korrekt gespeichert")
