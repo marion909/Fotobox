@@ -55,7 +55,6 @@
                         <span class="camera-icon">📷</span>
                     </div>
                 </div>
-                <span class="button-label">Foto aufnehmen</span>
             </button>
             
             {% if not camera_connected %}
@@ -369,6 +368,12 @@ function startPhotoCountdown(seconds = 3) {
 
 // Foto-Aufnahme nach Countdown
 function takePhotoNow() {
+    const button = document.getElementById('takePhotoBtn');
+    
+    // Button ausblenden für Foto-Aufnahme
+    button.style.opacity = '0';
+    button.style.pointerEvents = 'none';
+    
     showLoading();
     
     fetch('/api/take_photo', {
@@ -388,16 +393,28 @@ function takePhotoNow() {
             // Aktualisiere Hintergrund mit neuem Foto
             refreshBackgroundAfterPhoto();
             
+            // Button nach kurzer Zeit wieder einblenden
+            setTimeout(() => {
+                button.style.opacity = '1';
+                button.style.pointerEvents = 'auto';
+            }, 3000);
+            
             // Status-Update
             setTimeout(() => {
                 location.reload(); // Komplettes Neuladen für aktualisierte Daten
             }, 2000);
         } else {
+            // Bei Fehler Button sofort wieder einblenden
+            button.style.opacity = '1';
+            button.style.pointerEvents = 'auto';
             showNotification('❌ Fehler: ' + data.message, 'error');
         }
     })
     .catch(error => {
         hideLoading();
+        // Bei Fehler Button sofort wieder einblenden
+        button.style.opacity = '1';
+        button.style.pointerEvents = 'auto';
         showNotification('❌ Verbindungsfehler: ' + error.message, 'error');
     });
 }
