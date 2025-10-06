@@ -354,7 +354,7 @@
             </div>
 
             <div class="setting-card">
-                <h3>🌐 Server-Konfiguration</h3>
+                <h3>🌐 Upload-Server (JSON-Konfiguration)</h3>
                 <div class="setting-group">
                     <div class="input-setting">
                         <label>HTTP Endpoint</label>
@@ -362,24 +362,26 @@
                                value="{{ config.upload.http_endpoint }}"
                                placeholder="https://example.com/upload"
                                onchange="updateConfig('upload.http_endpoint', this.value)">
+                        <small class="setting-help">Endpoint für direkten Upload aus der Fotobox</small>
                     </div>
                     
                     <div class="input-setting">
-                        <label>API-Schlüssel (optional)</label>
+                        <label>API-Schlüssel</label>
                         <input type="text" id="api-key" 
                                value="{{ config.upload.http_api_key }}"
                                placeholder="API-Schlüssel für Authentifizierung"
                                onchange="updateConfig('upload.http_api_key', this.value)">
+                        <small class="setting-help">Authentifizierung für Upload-Endpoint</small>
                     </div>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn btn-secondary" onclick="testUpload()">Verbindung testen</button>
+                    <button class="btn btn-secondary" onclick="testUpload()">Upload-Verbindung testen</button>
                 </div>
             </div>
 
             <div class="setting-card">
-                <h3>⚙️ Server-Konfiguration</h3>
+                <h3>⚙️ Upload-Server-Backend (PHP-Konfiguration)</h3>
                 <div class="setting-group">
                     <div class="toggle-setting">
                         <label class="toggle-switch">
@@ -388,19 +390,21 @@
                                    onchange="updateServerConfig('server_upload_enabled', this.checked)">
                             <span class="slider"></span>
                         </label>
-                        <span>Server-Upload aktivieren</span>
+                        <span>Upload-Server aktivieren</span>
+                        <small class="setting-help">Aktiviert/deaktiviert den gesamten Upload-Server</small>
                     </div>
                     
                     <div class="input-setting">
-                        <label>Server-URL</label>
+                        <label>Server-Basis-URL</label>
                         <input type="url" id="server-base-url" 
                                value="{{ server_config.base_url or '' }}"
                                placeholder="https://upload.example.com"
                                onchange="updateServerConfig('base_url', this.value)">
+                        <small class="setting-help">Basis-URL des Upload-Servers</small>
                     </div>
                     
                     <div class="input-setting">
-                        <label>API-Schlüssel</label>
+                        <label>Server API-Schlüssel</label>
                         <div class="input-group">
                             <input type="text" id="server-api-key" 
                                    value="{{ server_config.api_key or '' }}"
@@ -408,6 +412,7 @@
                                    onchange="updateServerConfig('api_key', this.value)">
                             <button class="btn btn-small" onclick="generateApiKey()">Generieren</button>
                         </div>
+                        <small class="setting-help">64-Zeichen sicherer Schlüssel für Server-Authentifizierung</small>
                     </div>
                     
                     <div class="input-setting">
@@ -416,12 +421,13 @@
                                value="{{ server_config.max_file_size_mb or 10 }}"
                                min="1" max="100"
                                onchange="updateServerConfig('max_file_size_mb', this.value)">
+                        <small class="setting-help">Maximale Upload-Dateigröße in Megabytes</small>
                     </div>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn btn-secondary" onclick="testServerConnection()">Verbindung testen</button>
-                    <button class="btn btn-primary" onclick="saveServerConfig()">Speichern</button>
+                    <button class="btn btn-secondary" onclick="testServerConnection()">Server-Verbindung testen</button>
+                    <button class="btn btn-primary" onclick="saveServerConfig()">Server-Config speichern</button>
                 </div>
             </div>
 

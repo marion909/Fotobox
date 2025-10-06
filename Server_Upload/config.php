@@ -10,7 +10,7 @@
 
 // API-Key für Authentifizierung (leer = keine Authentifizierung)
 // Generiere einen sicheren Key: openssl rand -hex 32
-define('API_KEY', 'GKU52R0RP4EwMnmJg00d52wgW5iEzSV3J3Hv4WBMA0dL8aS0vS');
+define('API_KEY', 'test-server-key-456');
 
 // =====================================
 // UPLOAD-EINSTELLUNGEN
@@ -20,7 +20,7 @@ define('API_KEY', 'GKU52R0RP4EwMnmJg00d52wgW5iEzSV3J3Hv4WBMA0dL8aS0vS');
 define('UPLOAD_DIR', __DIR__ . '/uploads');
 
 // Maximale Dateigröße in Bytes (default: 10MB)
-define('MAX_FILE_SIZE', 10 * 1024 * 1024);
+define('MAX_FILE_SIZE', 15728640);
 
 // Basis-URL für Datei-Links (ohne abschließenden Slash)
 define('BASE_URL', 'https://upload.neuhauser.cloud');
