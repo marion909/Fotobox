@@ -558,6 +558,74 @@ def filesize_filter(size):
         size /= 1024
     return f"{size:.1f} TB"
 
+# Zusätzliche API-Endpunkte für neue Admin-Seite
+@app.route('/api/storage_info')
+def api_storage_info():
+    """Speicher-Informationen abrufen"""
+    try:
+        import shutil
+        total, used, free = shutil.disk_usage(config.photo_dir)
+        return jsonify({
+            'success': True,
+            'total': f"{total // (1024**3)} GB",
+            'used': f"{used // (1024**3)} GB",
+            'free': f"{free // (1024**3)} GB"
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        })
+
+@app.route('/api/detect_printers')
+def api_detect_printers():
+    """Verfügbare Drucker finden"""
+    try:
+        result = subprocess.run(['lpstat', '-p'], capture_output=True, text=True)
+        printers = []
+        for line in result.stdout.split('\n'):
+            if line.startswith('printer '):
+                printer_name = line.split()[1]
+                printers.append(printer_name)
+        
+        return jsonify({
+            'success': True,
+            'printers': printers
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'printers': [],
+            'message': str(e)
+        })
+
+@app.route('/api/clear_photos', methods=['POST'])
+def api_clear_photos():
+    """Alle Fotos löschen"""
+    try:
+        import glob
+        
+        # Lösche alle Foto-Dateien
+        photo_files = glob.glob(os.path.join(config.photo_dir, "*.jpg"))
+        photo_files += glob.glob(os.path.join(config.photo_dir, "*.jpeg"))
+        photo_files += glob.glob(os.path.join(config.photo_dir, "*.png"))
+        
+        deleted_count = 0
+        for photo_file in photo_files:
+            if os.path.basename(photo_file) != '.gitkeep':  # .gitkeep erhalten
+                os.remove(photo_file)
+                deleted_count += 1
+        
+        return jsonify({
+            'success': True,
+            'message': f'{deleted_count} Fotos gelöscht'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        })
+
 if __name__ == '__main__':
     print("🚀 Fotobox Phase 2 startet...")
     print(f"📁 Fotos werden gespeichert in: {os.path.abspath(config.photo_dir)}")
