@@ -12,10 +12,10 @@ from config import config_manager
 try:
     import gphoto2 as gp
     GPHOTO2_AVAILABLE = True
-    print("✅ gphoto2 Python verfügbar")
+    print("[OK] gphoto2 Python verfügbar")
 except ImportError:
     GPHOTO2_AVAILABLE = False
-    print("❌ gphoto2 Python nicht verfügbar - Installation erforderlich")
+    print("[FAIL] gphoto2 Python nicht verfügbar - Installation erforderlich")
 
 class OptimalCameraManager:
     """Optimaler Kamera-Manager mit nur gphoto2 Python"""
@@ -26,10 +26,10 @@ class OptimalCameraManager:
         self.camera_detected = False
         
         if not GPHOTO2_AVAILABLE:
-            print("⚠️ gphoto2 Python fehlt. Installation: pip install gphoto2")
+            print("[WARN] gphoto2 Python fehlt. Installation: pip install gphoto2")
             return
             
-        print("📷 Optimaler Camera Manager (gphoto2 Python)")
+        print("[CAM] Optimaler Camera Manager (gphoto2 Python)")
         self.check_camera()
     
     def check_camera(self) -> bool:
@@ -54,7 +54,7 @@ class OptimalCameraManager:
             # Test ob Kamera antwortet
             config = self.camera.get_config()
             self.camera_detected = True
-            print("✅ Canon EOS Kamera verbunden (gphoto2 Python)")
+            print("[OK] Canon EOS Kamera verbunden (gphoto2 Python)")
             return True
             
         except gp.GPhoto2Error as e:
@@ -114,10 +114,10 @@ class OptimalCameraManager:
             }
     
     def start_live_preview(self):
-        """Startet Live-Vorschau der Kamera"""
+        """Startet Live-Vorschau der Kamera (Canon EOS optimiert)"""
         if not GPHOTO2_AVAILABLE:
             # Fallback für Demo/Test ohne gphoto2
-            print("🎬 Demo-Modus: Live-Vorschau simuliert (gphoto2 nicht verfügbar)")
+            print("[DEMO] Demo-Modus: Live-Vorschau simuliert (gphoto2 nicht verfügbar)")
             return {
                 'success': True,
                 'message': 'Demo Live-Vorschau aktiviert',
@@ -131,16 +131,60 @@ class OptimalCameraManager:
             }
         
         try:
-            # Live View aktivieren
-            config = self.camera.get_config()
-            viewfinder = config.get_child_by_name('viewfinder')
-            viewfinder.set_value(1)
-            self.camera.set_config(config)
+            print("[CAM] Starte Canon EOS Live View...")
             
-            return {
-                'success': True,
-                'message': 'Live-Vorschau aktiviert'
-            }
+            # Schritt 1: Kamera-Konfiguration abrufen
+            config = self.camera.get_config()
+            print("   [OK] Kamera-Config abgerufen")
+            
+            # Schritt 2: Versuche verschiedene Live View Modi für Canon
+            liveview_methods = [
+                ('viewfinder', 1),           # Standard Live View
+                ('eosviewfinder', 1),        # Canon EOS spezifisch
+                ('liveview', 1),             # Alternative Bezeichnung  
+                ('capture', 1),              # Capture-Mode für Live View
+            ]
+            
+            success = False
+            for method, value in liveview_methods:
+                try:
+                    widget = config.get_child_by_name(method)
+                    if widget:
+                        print(f"   🔍 Versuche {method}...")
+                        widget.set_value(value)
+                        self.camera.set_config(config)
+                        print(f"   ✅ {method} aktiviert")
+                        success = True
+                        break
+                except gp.GPhoto2Error as e:
+                    print(f"   ⚠️ {method} nicht verfügbar: {str(e)}")
+                    continue
+                except Exception as e:
+                    print(f"   ⚠️ {method} Fehler: {str(e)}")
+                    continue
+            
+            if not success:
+                print("   🔄 Alternative: Direkte Preview-Capture...")
+                # Fallback: Teste direkte Preview-Aufnahme
+                try:
+                    preview = self.camera.capture_preview()
+                    if preview:
+                        print("   ✅ Direkte Preview-Capture funktioniert")
+                        success = True
+                except Exception as e:
+                    print(f"   ❌ Auch direkte Preview fehlgeschlagen: {e}")
+            
+            if success:
+                return {
+                    'success': True,
+                    'message': 'Live-Vorschau aktiviert'
+                }
+            else:
+                return {
+                    'success': False,
+                    'message': 'Live-Vorschau konnte nicht aktiviert werden - Kamera unterstützt möglicherweise kein Live View'
+                }
+                
         except Exception as e:
             print(f"❌ Live-Vorschau Fehler: {e}")
             return {
@@ -149,21 +193,59 @@ class OptimalCameraManager:
             }
     
     def stop_live_preview(self):
-        """Stoppt Live-Vorschau der Kamera"""
+        """Stoppt Live-Vorschau der Kamera (Canon EOS optimiert)"""
         if not GPHOTO2_AVAILABLE or not self.camera_detected:
+            print("📷 Live View stoppen (Demo/Kamera nicht verfügbar)")
             return
         
         try:
-            # Live View deaktivieren
+            print("📷 Stoppe Canon EOS Live View...")
+            
+            # Kamera-Konfiguration abrufen
             config = self.camera.get_config()
-            viewfinder = config.get_child_by_name('viewfinder')
-            viewfinder.set_value(0)
-            self.camera.set_config(config)
+            
+            # Versuche verschiedene Live View Modi zu deaktivieren
+            liveview_methods = [
+                ('viewfinder', 0),           # Standard Live View
+                ('eosviewfinder', 0),        # Canon EOS spezifisch  
+                ('liveview', 0),             # Alternative Bezeichnung
+                ('capture', 0),              # Capture-Mode deaktivieren
+            ]
+            
+            stopped_any = False
+            for method, value in liveview_methods:
+                try:
+                    widget = config.get_child_by_name(method)
+                    if widget:
+                        widget.set_value(value)
+                        self.camera.set_config(config)
+                        print(f"   ✅ {method} deaktiviert")
+                        stopped_any = True
+                except gp.GPhoto2Error:
+                    continue  # Widget nicht verfügbar
+                except Exception:
+                    continue  # Fehler beim Deaktivieren
+            
+            # Mirror Lock-Up zurücksetzen falls verwendet
+            try:
+                mirror_lockup = config.get_child_by_name('mirrorlockup')
+                if mirror_lockup:
+                    mirror_lockup.set_value(0)
+                    self.camera.set_config(config)
+                    print("   ✅ Mirror Lock-Up deaktiviert")
+            except:
+                pass  # Mirror Lock-Up nicht verfügbar
+            
+            if stopped_any:
+                print("   ✅ Live View erfolgreich gestoppt")
+            else:
+                print("   ⚠️ Keine aktiven Live View Modi gefunden")
+                
         except Exception as e:
             print(f"⚠️ Fehler beim Stoppen der Live-Vorschau: {e}")
     
     def capture_preview_image(self):
-        """Erfasst ein Preview-Bild für Live-Ansicht"""
+        """Erfasst ein Preview-Bild für Live-Ansicht (Canon EOS optimiert)"""
         if not GPHOTO2_AVAILABLE:
             # Demo-Modus: Erstelle ein Platzhalter-Preview-Bild
             return self._create_demo_preview_image()
@@ -172,16 +254,72 @@ class OptimalCameraManager:
             return None
         
         try:
-            # Preview-Bild aufnehmen
-            camera_file = self.camera.capture_preview()
-            file_data = camera_file.get_data_and_size()
+            print("📸 Erfasse Preview-Bild...")
             
-            # Als temporäre Datei speichern
-            preview_path = os.path.join(self.config.photo_dir, 'live_preview.jpg')
-            with open(preview_path, 'wb') as f:
-                f.write(file_data)
+            # Schritt 1: Kamera bereit machen für Preview
+            # Bei Canon EOS muss manchmal erst der Mirror aufgeklappt werden
+            try:
+                # Versuche Mirror Lock-Up für bessere Preview-Qualität
+                config = self.camera.get_config()
+                mirror_lockup = config.get_child_by_name('mirrorlockup')
+                if mirror_lockup:
+                    mirror_lockup.set_value(1)
+                    self.camera.set_config(config)
+                    time.sleep(0.5)  # Kurz warten
+            except:
+                pass  # Mirror Lock-Up nicht verfügbar
             
-            return preview_path
+            # Schritt 2: Preview-Bild aufnehmen mit Retry-Logik
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    print(f"   🔄 Versuch {attempt + 1}/{max_retries}...")
+                    
+                    # Preview aufnehmen
+                    camera_file = self.camera.capture_preview()
+                    if not camera_file:
+                        raise Exception("Kein Preview-Bild erhalten")
+                    
+                    # Daten extrahieren
+                    file_data = camera_file.get_data_and_size()
+                    if not file_data or len(file_data) < 1000:  # Mindestgröße prüfen
+                        raise Exception(f"Preview-Daten zu klein: {len(file_data) if file_data else 0} bytes")
+                    
+                    # Als temporäre Datei speichern
+                    os.makedirs(self.config.photo_dir, exist_ok=True)
+                    preview_path = os.path.join(self.config.photo_dir, 'live_preview.jpg')
+                    
+                    with open(preview_path, 'wb') as f:
+                        f.write(file_data)
+                    
+                    # Datei-Validierung
+                    if os.path.exists(preview_path) and os.path.getsize(preview_path) > 1000:
+                        print(f"   ✅ Preview-Bild gespeichert: {preview_path} ({len(file_data)} bytes)")
+                        return preview_path
+                    else:
+                        raise Exception("Gespeicherte Preview-Datei ungültig")
+                        
+                except gp.GPhoto2Error as e:
+                    error_msg = str(e).lower()
+                    if 'busy' in error_msg or 'device' in error_msg:
+                        print(f"   ⚠️ Kamera beschäftigt (Versuch {attempt + 1}) - warte...")
+                        time.sleep(1)
+                        continue
+                    else:
+                        print(f"   ❌ gPhoto2 Fehler: {e}")
+                        break
+                except Exception as e:
+                    print(f"   ⚠️ Versuch {attempt + 1} fehlgeschlagen: {e}")
+                    if attempt < max_retries - 1:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        break
+            
+            # Fallback zu Demo-Bild
+            print("   🎬 Fallback zu Demo-Preview...")
+            return self._create_demo_preview_image()
+            
         except Exception as e:
             print(f"❌ Preview-Aufnahme Fehler: {e}")
             return self._create_demo_preview_image()
