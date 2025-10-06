@@ -44,15 +44,203 @@
         </div>
     </section>
     
+    <!-- Grundkonfiguration -->
+    <section class="admin-section">
+        <h2>⚙️ Grundkonfiguration</h2>
+        <div class="settings-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Countdown aktiviert:</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="countdown-enabled" 
+                               {% if config.countdown_enabled %}checked{% endif %}
+                               onchange="updateConfig('countdown_enabled', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>Countdown Dauer (Sekunden):</label>
+                    <input type="number" id="countdown-duration" 
+                           value="{{ config.countdown_duration }}" 
+                           min="1" max="10"
+                           onchange="updateConfig('countdown_duration', parseInt(this.value))">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Foto-Qualität:</label>
+                    <select id="photo-quality" onchange="updateConfig('photo_quality', this.value)">
+                        <option value="Fine" {% if config.photo_quality == 'Fine' %}selected{% endif %}>Fein</option>
+                        <option value="Normal" {% if config.photo_quality == 'Normal' %}selected{% endif %}>Normal</option>
+                        <option value="Basic" {% if config.photo_quality == 'Basic' %}selected{% endif %}>Standard</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Kamera Modell:</label>
+                    <input type="text" id="camera-model" 
+                           value="{{ config.camera_model }}"
+                           onchange="updateConfig('camera_model', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overlay Konfiguration -->
+    <section class="admin-section">
+        <h2>🎨 Overlay & Branding</h2>
+        <div class="settings-form">
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="overlay-enabled-config" 
+                           {% if config.overlay.enabled %}checked{% endif %}
+                           onchange="updateConfig('overlay.enabled', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Overlays aktivieren</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="text-overlay-enabled" 
+                           {% if config.overlay.text_enabled %}checked{% endif %}
+                           onchange="updateConfig('overlay.text_enabled', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Text-Overlay aktivieren</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Overlay Text:</label>
+                <input type="text" id="overlay-text-config" 
+                       value="{{ config.overlay.text_content }}"
+                       placeholder="z.B. Fotobox Event 2025"
+                       onchange="updateConfig('overlay.text_content', this.value)">
+                <small>Verwende {date}, {time}, {datetime} für automatische Werte</small>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Text-Position:</label>
+                    <select id="text-position" onchange="updateConfig('overlay.text_position', this.value)">
+                        <option value="top-left" {% if config.overlay.text_position == 'top-left' %}selected{% endif %}>Oben Links</option>
+                        <option value="top-center" {% if config.overlay.text_position == 'top-center' %}selected{% endif %}>Oben Mitte</option>
+                        <option value="top-right" {% if config.overlay.text_position == 'top-right' %}selected{% endif %}>Oben Rechts</option>
+                        <option value="bottom-left" {% if config.overlay.text_position == 'bottom-left' %}selected{% endif %}>Unten Links</option>
+                        <option value="bottom-center" {% if config.overlay.text_position == 'bottom-center' %}selected{% endif %}>Unten Mitte</option>
+                        <option value="bottom-right" {% if config.overlay.text_position == 'bottom-right' %}selected{% endif %}>Unten Rechts</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Schriftgröße:</label>
+                    <input type="number" id="text-font-size" 
+                           value="{{ config.overlay.text_font_size }}"
+                           min="12" max="72"
+                           onchange="updateConfig('overlay.text_font_size', parseInt(this.value))">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Druck Konfiguration -->
+    <section class="admin-section">
+        <h2>�️ Druck-Einstellungen</h2>
+        <div class="settings-form">
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="printing-enabled-config" 
+                           {% if config.printing.enabled %}checked{% endif %}
+                           onchange="updateConfig('printing.enabled', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Drucken aktivieren</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-print-config" 
+                           {% if config.printing.auto_print %}checked{% endif %}
+                           onchange="updateConfig('printing.auto_print', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Automatisch drucken nach Foto</span>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Drucker Name:</label>
+                    <input type="text" id="printer-name-config" 
+                           value="{{ config.printing.printer_name }}"
+                           placeholder="z.B. Canon_SELPHY_CP1300"
+                           onchange="updateConfig('printing.printer_name', this.value)">
+                </div>
+                
+                <div class="form-group">
+                    <label>Papiergröße:</label>
+                    <select id="paper-size" onchange="updateConfig('printing.paper_size', this.value)">
+                        <option value="10x15cm" {% if config.printing.paper_size == '10x15cm' %}selected{% endif %}>10x15cm</option>
+                        <option value="A4" {% if config.printing.paper_size == 'A4' %}selected{% endif %}>A4</option>
+                        <option value="A6" {% if config.printing.paper_size == 'A6' %}selected{% endif %}>A6</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upload Konfiguration -->
+    <section class="admin-section">
+        <h2>☁️ Upload-Einstellungen</h2>
+        <div class="settings-form">
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="upload-enabled-config" 
+                           {% if config.upload.enabled %}checked{% endif %}
+                           onchange="updateConfig('upload.enabled', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Upload aktivieren</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="auto-upload-config" 
+                           {% if config.upload.auto_upload %}checked{% endif %}
+                           onchange="updateConfig('upload.auto_upload', this.checked)">
+                    <span class="slider"></span>
+                </label>
+                <span>Automatisch uploaden nach Foto</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Upload-Methode:</label>
+                <select id="upload-method-config" onchange="updateConfig('upload.upload_method', this.value)">
+                    <option value="http" {% if config.upload.upload_method == 'http' %}selected{% endif %}>HTTP/HTTPS</option>
+                    <option value="sftp" {% if config.upload.upload_method == 'sftp' %}selected{% endif %}>SFTP</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>HTTP Endpoint:</label>
+                <input type="url" id="http-endpoint" 
+                       value="{{ config.upload.http_endpoint }}"
+                       placeholder="https://example.com/upload"
+                       onchange="updateConfig('upload.http_endpoint', this.value)">
+            </div>
+        </div>
+    </section>
+
     <!-- Kamera Einstellungen -->
     <section class="admin-section">
-        <h2>📷 Kamera Einstellungen</h2>
+        <h2>📷 Kamera Status</h2>
         <div class="settings-form">
             <div class="form-group">
                 <label>Kamera Status:</label>
                 <div class="status-display" id="camera-status">
                     {% if camera_connected %}
-                        <span class="status-ok">✓ Canon EOS 2000D erkannt</span>
+                        <span class="status-ok">✓ {{ config.camera_model }} erkannt</span>
                     {% else %}
                         <span class="status-error">✗ Keine Kamera gefunden</span>
                     {% endif %}
@@ -308,6 +496,45 @@
 
 {% block scripts %}
 <script>
+// Konfiguration aktualisieren
+function updateConfig(key, value) {
+    console.log(`Aktualisiere ${key} = ${value}`);
+    
+    const config = {};
+    
+    // Handle nested keys like 'overlay.enabled'
+    if (key.includes('.')) {
+        const keys = key.split('.');
+        let current = config;
+        for (let i = 0; i < keys.length - 1; i++) {
+            current[keys[i]] = current[keys[i]] || {};
+            current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
+    } else {
+        config[key] = value;
+    }
+    
+    fetch('/api/config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('✓ Konfiguration gespeichert', 'success');
+        } else {
+            showNotification('✗ Fehler beim Speichern: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Fehler beim Speichern: ' + error.message, 'error');
+    });
+}
+
 // Kamera testen
 function testCamera() {
     showLoading();

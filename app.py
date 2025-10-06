@@ -160,10 +160,11 @@ def gallery():
 
 @app.route('/admin')
 def admin():
-    """Admin-Panel (Phase 3)"""
+    """Admin-Panel mit Konfiguration"""
     return render_template('admin.html', 
                          camera_connected=camera.camera_detected,
-                         photo_count=PhotoManager.get_photo_count())
+                         photo_count=PhotoManager.get_photo_count(),
+                         config=config)
 
 @app.route('/api/test_camera')
 def api_test_camera():
